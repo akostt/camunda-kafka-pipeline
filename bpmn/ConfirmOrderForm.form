@@ -1,0 +1,51 @@
+{
+  "id": "ConfirmOrderForm",
+  "components": [
+    {
+      "type": "text",
+      "text": "## Назначение статуса заказа",
+      "id": "Field_header"
+    },
+    {
+      "type": "textfield",
+      "key": "orderNumber",
+      "label": "Номер заказа",
+      "id": "Field_orderNumber",
+      "readonly": true
+    },
+    {
+      "type": "textfield",
+      "key": "stateName",
+      "label": "Тип операции (Kafka)",
+      "id": "Field_stateName",
+      "readonly": true
+    },
+    {
+      "type": "textfield",
+      "key": "currentStatusName",
+      "label": "Текущий статус заказа",
+      "id": "Field_currentStatusName",
+      "readonly": true
+    },
+    {
+      "type": "select",
+      "key": "newStatusId",
+      "label": "Новый статус заказа",
+      "id": "Field_newStatusId",
+      "valuesExpression": "=statusOptions",
+      "validate": {
+        "required": true
+      }
+    },
+    {
+      "type": "checkbox",
+      "key": "confirmed",
+      "label": "Подтвердить изменение статуса",
+      "id": "Field_confirmed"
+    }
+  ],
+  "schemaVersion": 17,
+  "type": "default",
+  "executionPlatform": "Camunda Cloud",
+  "executionPlatformVersion": "8.9.0"
+}

@@ -1,0 +1,1002 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<ns0:definitions xmlns:ns0="http://www.omg.org/spec/BPMN/20100524/MODEL" xmlns:ns2="http://camunda.org/schema/zeebe/1.0" xmlns:ns3="http://www.omg.org/spec/BPMN/20100524/DI" xmlns:ns4="http://www.omg.org/spec/DD/20100524/DC" xmlns:ns5="http://www.omg.org/spec/DD/20100524/DI" xmlns:ns1="http://camunda.org/schema/modeler/1.0" id="Definitions_OrderLifecycle" targetNamespace="http://bpmn.io/schema/bpmn" exporter="Camunda Modeler" exporterVersion="5.47.0" ns1:executionPlatform="Camunda Cloud" ns1:executionPlatformVersion="8.9.0">
+  <ns0:process id="Process_OrderLifecycle" name="Жизненный цикл заказа" isExecutable="true">
+    <ns0:startEvent id="Start_OrderKafka" name="Заказ из Kafka" ns2:modelerTemplate="io.camunda.connectors.inbound.KafkaMessageStart.v1" ns2:modelerTemplateVersion="7" ns2:modelerTemplateIcon="data:image/svg+xml;base64,PHN2ZyB3aWR0aD0nMTgnIGhlaWdodD0nMTgnIHZpZXdCb3g9JzAgMCAyNTYgNDE2JyB4bWxucz0naHR0cDovL3d3dy53My5vcmcvMjAwMC9zdmcnIHByZXNlcnZlQXNwZWN0UmF0aW89J3hNaWRZTWlkJz4KICAgIDxwYXRoIGQ9J00yMDEuODE2IDIzMC4yMTZjLTE2LjE4NiAwLTMwLjY5NyA3LjE3MS00MC42MzQgMTguNDYxbC0yNS40NjMtMTguMDI2YzIuNzAzLTcuNDQyIDQuMjU1LTE1LjQzMyA0LjI1NS0yMy43OTcgMC04LjIxOS0xLjQ5OC0xNi4wNzYtNC4xMTItMjMuNDA4bDI1LjQwNi0xNy44MzVjOS45MzYgMTEuMjMzIDI0LjQwOSAxOC4zNjUgNDAuNTQ4IDE4LjM2NSAyOS44NzUgMCA1NC4xODQtMjQuMzA1IDU0LjE4NC01NC4xODQgMC0yOS44NzktMjQuMzA5LTU0LjE4NC01NC4xODQtNTQuMTg0LTI5Ljg3NSAwLTU0LjE4NCAyNC4zMDUtNTQuMTg0IDU0LjE4NCAwIDUuMzQ4LjgwOCAxMC41MDUgMi4yNTggMTUuMzg5bC0yNS40MjMgMTcuODQ0Yy0xMC42Mi0xMy4xNzUtMjUuOTExLTIyLjM3NC00My4zMzMtMjUuMTgydi0zMC42NGMyNC41NDQtNS4xNTUgNDMuMDM3LTI2Ljk2MiA0My4wMzctNTMuMDE5QzEyNC4xNzEgMjQuMzA1IDk5Ljg2MiAwIDY5Ljk4NyAwIDQwLjExMiAwIDE1LjgwMyAyNC4zMDUgMTUuODAzIDU0LjE4NGMwIDI1LjcwOCAxOC4wMTQgNDcuMjQ2IDQyLjA2NyA1Mi43Njl2MzEuMDM4QzI1LjA0NCAxNDMuNzUzIDAgMTcyLjQwMSAwIDIwNi44NTRjMCAzNC42MjEgMjUuMjkyIDYzLjM3NCA1OC4zNTUgNjguOTR2MzIuNzc0Yy0yNC4yOTkgNS4zNDEtNDIuNTUyIDI3LjAxMS00Mi41NTIgNTIuODk0IDAgMjkuODc5IDI0LjMwOSA1NC4xODQgNTQuMTg0IDU0LjE4NCAyOS44NzUgMCA1NC4xODQtMjQuMzA1IDU0LjE4NC01NC4xODQgMC0yNS44ODMtMTguMjUzLTQ3LjU1My00Mi41NTItNTIuODk0di0zMi43NzVhNjkuOTY1IDY5Ljk2NSAwIDAgMCA0Mi42LTI0Ljc3NmwyNS42MzMgMTguMTQzYy0xLjQyMyA0Ljg0LTIuMjIgOS45NDYtMi4yMiAxNS4yNCAwIDI5Ljg3OSAyNC4zMDkgNTQuMTg0IDU0LjE4NCA1NC4xODQgMjkuODc1IDAgNTQuMTg0LTI0LjMwNSA1NC4xODQtNTQuMTg0IDAtMjkuODc5LTI0LjMwOS01NC4xODQtNTQuMTg0LTU0LjE4NHptMC0xMjYuNjk1YzE0LjQ4NyAwIDI2LjI3IDExLjc4OCAyNi4yNyAyNi4yNzFzLTExLjc4MyAyNi4yNyAyNi4yNyAyNi4yNy0yNi4yNy0xMS43ODctMjYuMjctMjYuMjdjMC0xNC40ODMgMTEuNzgzLTI2LjI3MSAyNi4yNy0yNi4yNzF6bS0xNTguMS00OS4zMzdjMC0xNC40ODMgMTEuNzg0LTI2LjI3IDI2LjI3MS0yNi4yN3MyNi4yNyAxMS43ODcgMjYuMjcgMjYuMjdjMCAxNC40ODMtMTEuNzgzIDI2LjI3LTI2LjI3IDI2LjI3cy0yNi4yNzEtMTEuNzg3LTI2LjI3MS0yNi4yN3ptNTIuNTQxIDMwNy4yNzhjMCAxNC40ODMtMTEuNzgzIDI2LjI3LTI2LjI3IDI2LjI3cy0yNi4yNzEtMTEuNzg3LTI2LjI3MS0yNi4yN2MwLTE0LjQ4MyAxMS43ODQtMjYuMjcgMjYuMjcxLTI2LjI3czI2LjI3IDExLjc4NyAyNi4yNyAyNi4yN3ptLTI2LjI3Mi0xMTcuOTdjLTIwLjIwNSAwLTM2LjY0Mi0xNi40MzQtMzYuNjQyLTM2LjYzOCAwLTIwLjIwNSAxNi40MzctMzYuNjQyIDM2LjY0Mi0zNi42NDIgMjAuMjA0IDAgMzYuNjQxIDE2LjQzNyAzNi42NDEgMzYuNjQyIDAgMjAuMjA0LTE2LjQzNyAzNi42MzgtMzYuNjQxIDM2LjYzOHptMTMxLjgzMSA2Ny4xNzljLTE0LjQ4NyAwLTI2LjI3LTExLjc4OC0yNi4yNy0yNi4yNzFzMTEuNzgzLTI2LjI3IDI2LjI3LTI2LjI3IDI2LjI3IDExLjc4NyAyNi4yNyAyNi4yN2MwIDE0LjQ4My0xMS43ODMgMjYuMjcxLTI2LjI3IDI2LjI3MXonCiAgICAgICAgICBzdHlsZT0nZmlsbDojMjMxZjIwJy8+Cjwvc3ZnPg==">
+      <ns0:extensionElements>
+        <ns2:properties>
+          <ns2:property name="correlationKeyExpression" value="= string(value.messageObject.number)" />
+          <ns2:property name="inbound.type" value="io.camunda:connector-kafka-inbound:1" />
+          <ns2:property name="authenticationType" value="credentials" />
+          <ns2:property name="topic.bootstrapServers" value="localhost:9092" />
+          <ns2:property name="topic.topicName" value="all_orders" />
+          <ns2:property name="groupId" value="camunda-lc-start" />
+          <ns2:property name="autoOffsetReset" value="earliest" />
+          <ns2:property name="schemaStrategy.type" value="schemaRegistry" />
+          <ns2:property name="schemaStrategy.schemaType" value="avro" />
+          <ns2:property name="schemaStrategy.schemaRegistryUrl" value="http://localhost:8082" />
+          <ns2:property name="consumeUnmatchedEvents" value="true" />
+          <ns2:property name="correlationRequired" value="notRequired" />
+          <ns2:property name="deduplicationModeManualFlag" value="false" />
+          <ns2:property name="deduplicationMode" value="AUTO" />
+          <ns2:property name="resultVariable" value="" />
+          <ns2:property name="resultExpression" value="= {&#10;  orderId       : string(value.messageObject.id),&#10;  orderNumber   : string(value.messageObject.number),&#10;  orderStatusId : value.messageObject.statusId,&#10;  stateName     : string(value.messageObject.stateName),&#10;  shopId        : string(value.messageObject.shopId),&#10;  managerId     : string(value.messageObject.managerId),&#10;  paymentTypeId : string(value.messageObject.paymentTypeId),&#10;  orderComment  : string(value.messageObject.comment),&#10;  correlationId : string(value.metadata.correlationId),&#10;  orderPayload  : value&#10;}" />
+        </ns2:properties>
+      </ns0:extensionElements>
+      <ns0:outgoing>Flow_start_to_validate</ns0:outgoing>
+      <ns0:messageEventDefinition id="MsgDef_Start" messageRef="Message_OrderLifecycle" />
+    </ns0:startEvent>
+    <ns0:exclusiveGateway id="GW_ValidateStart" name="Номер заказа&#10;присутствует?" default="Flow_validate_to_invalid">
+      <ns0:incoming>Flow_start_to_validate</ns0:incoming>
+      <ns0:outgoing>Flow_validate_to_gw</ns0:outgoing>
+      <ns0:outgoing>Flow_validate_to_invalid</ns0:outgoing>
+    </ns0:exclusiveGateway>
+    <ns0:exclusiveGateway id="GW_LoopJoin" name="Новый статус">
+      <ns0:incoming>Flow_catch_to_gw</ns0:incoming>
+      <ns0:incoming>Flow_validate_to_gw</ns0:incoming>
+      <ns0:outgoing>Flow_join_to_route</ns0:outgoing>
+    </ns0:exclusiveGateway>
+    <ns0:exclusiveGateway id="GW_RouteByStatus" name="Маршрутизация&#10;по статусу" default="Flow_gw_to_unknown">
+      <ns0:incoming>Flow_join_to_route</ns0:incoming>
+      <ns0:outgoing>Flow_gw_to_oformlyaemy</ns0:outgoing>
+      <ns0:outgoing>Flow_gw_to_ispolnyaemy</ns0:outgoing>
+      <ns0:outgoing>Flow_gw_to_regsklad</ns0:outgoing>
+      <ns0:outgoing>Flow_gw_to_kovrov</ns0:outgoing>
+      <ns0:outgoing>Flow_gw_to_nsk</ns0:outgoing>
+      <ns0:outgoing>Flow_gw_to_kovrov_plan</ns0:outgoing>
+      <ns0:outgoing>Flow_gw_to_nsk_plan</ns0:outgoing>
+      <ns0:outgoing>Flow_gw_to_delivery</ns0:outgoing>
+      <ns0:outgoing>Flow_gw_to_ready</ns0:outgoing>
+      <ns0:outgoing>Flow_gw_to_vnimanie</ns0:outgoing>
+      <ns0:outgoing>Flow_gw_to_netkani</ns0:outgoing>
+      <ns0:outgoing>Flow_gw_to_ozhidanie</ns0:outgoing>
+      <ns0:outgoing>Flow_gw_to_zhduoplatu</ns0:outgoing>
+      <ns0:outgoing>Flow_gw_to_centralskl</ns0:outgoing>
+      <ns0:outgoing>Flow_gw_to_peremeshenie</ns0:outgoing>
+      <ns0:outgoing>Flow_gw_to_rs</ns0:outgoing>
+      <ns0:outgoing>Flow_gw_to_vputi</ns0:outgoing>
+      <ns0:outgoing>Flow_gw_to_tranzit</ns0:outgoing>
+      <ns0:outgoing>Flow_gw_to_peremes_natt</ns0:outgoing>
+      <ns0:outgoing>Flow_gw_to_tochka</ns0:outgoing>
+      <ns0:outgoing>Flow_gw_to_smezhnyy</ns0:outgoing>
+      <ns0:outgoing>Flow_gw_to_otgruzka</ns0:outgoing>
+      <ns0:outgoing>Flow_gw_to_vypolnen</ns0:outgoing>
+      <ns0:outgoing>Flow_gw_to_otmenen</ns0:outgoing>
+      <ns0:outgoing>Flow_gw_to_unknown</ns0:outgoing>
+    </ns0:exclusiveGateway>
+    <ns0:scriptTask id="Task_Oformlyaemy" name="Оформляемый">
+      <ns0:extensionElements>
+        <ns2:script expression="= null" resultVariable="stub" />
+      </ns0:extensionElements>
+      <ns0:incoming>Flow_gw_to_oformlyaemy</ns0:incoming>
+      <ns0:outgoing>Flow_oformlyaemy_to_join</ns0:outgoing>
+    </ns0:scriptTask>
+    <ns0:scriptTask id="Task_Ispolnyaemy" name="Исполняемый">
+      <ns0:extensionElements>
+        <ns2:script expression="= null" resultVariable="stub" />
+      </ns0:extensionElements>
+      <ns0:incoming>Flow_gw_to_ispolnyaemy</ns0:incoming>
+      <ns0:outgoing>Flow_ispolnyaemy_to_join</ns0:outgoing>
+    </ns0:scriptTask>
+    <ns0:scriptTask id="Task_Vnimanie" name="Внимание">
+      <ns0:extensionElements>
+        <ns2:script expression="= null" resultVariable="stub" />
+      </ns0:extensionElements>
+      <ns0:incoming>Flow_gw_to_vnimanie</ns0:incoming>
+      <ns0:outgoing>Flow_vnimanie_to_join</ns0:outgoing>
+    </ns0:scriptTask>
+    <ns0:scriptTask id="Task_NetKani" name="Нет ткани">
+      <ns0:extensionElements>
+        <ns2:script expression="= null" resultVariable="stub" />
+      </ns0:extensionElements>
+      <ns0:incoming>Flow_gw_to_netkani</ns0:incoming>
+      <ns0:outgoing>Flow_netkani_to_join</ns0:outgoing>
+    </ns0:scriptTask>
+    <ns0:scriptTask id="Task_Ozhidanie" name="Ожидание">
+      <ns0:extensionElements>
+        <ns2:script expression="= null" resultVariable="stub" />
+      </ns0:extensionElements>
+      <ns0:incoming>Flow_gw_to_ozhidanie</ns0:incoming>
+      <ns0:outgoing>Flow_ozhidanie_to_join</ns0:outgoing>
+    </ns0:scriptTask>
+    <ns0:scriptTask id="Task_ZhduOplatu" name="Жду оплату">
+      <ns0:extensionElements>
+        <ns2:script expression="= null" resultVariable="stub" />
+      </ns0:extensionElements>
+      <ns0:incoming>Flow_gw_to_zhduoplatu</ns0:incoming>
+      <ns0:outgoing>Flow_zhduoplatu_to_join</ns0:outgoing>
+    </ns0:scriptTask>
+    <ns0:scriptTask id="Task_KovrovProcessing" name="Обрабатывается&#10;Ковров">
+      <ns0:extensionElements>
+        <ns2:script expression="= null" resultVariable="stub" />
+      </ns0:extensionElements>
+      <ns0:incoming>Flow_gw_to_kovrov</ns0:incoming>
+      <ns0:outgoing>Flow_kovrov_to_join</ns0:outgoing>
+    </ns0:scriptTask>
+    <ns0:scriptTask id="Task_NskProcessing" name="Обрабатывается&#10;Новосибирск">
+      <ns0:extensionElements>
+        <ns2:script expression="= null" resultVariable="stub" />
+      </ns0:extensionElements>
+      <ns0:incoming>Flow_gw_to_nsk</ns0:incoming>
+      <ns0:outgoing>Flow_nsk_to_join</ns0:outgoing>
+    </ns0:scriptTask>
+    <ns0:scriptTask id="Task_KovrovPlanning" name="Ковров&#10;планирование">
+      <ns0:extensionElements>
+        <ns2:script expression="= null" resultVariable="stub" />
+      </ns0:extensionElements>
+      <ns0:incoming>Flow_gw_to_kovrov_plan</ns0:incoming>
+      <ns0:outgoing>Flow_kovrov_plan_to_join</ns0:outgoing>
+    </ns0:scriptTask>
+    <ns0:scriptTask id="Task_NskPlanning" name="Новосибирск&#10;планирование">
+      <ns0:extensionElements>
+        <ns2:script expression="= null" resultVariable="stub" />
+      </ns0:extensionElements>
+      <ns0:incoming>Flow_gw_to_nsk_plan</ns0:incoming>
+      <ns0:outgoing>Flow_nsk_plan_to_join</ns0:outgoing>
+    </ns0:scriptTask>
+    <ns0:scriptTask id="Task_Delivery" name="Поставка">
+      <ns0:extensionElements>
+        <ns2:script expression="= null" resultVariable="stub" />
+      </ns0:extensionElements>
+      <ns0:incoming>Flow_gw_to_delivery</ns0:incoming>
+      <ns0:outgoing>Flow_delivery_to_join</ns0:outgoing>
+    </ns0:scriptTask>
+    <ns0:scriptTask id="Task_CentralSkl" name="Центральный склад">
+      <ns0:extensionElements>
+        <ns2:script expression="= null" resultVariable="stub" />
+      </ns0:extensionElements>
+      <ns0:incoming>Flow_gw_to_centralskl</ns0:incoming>
+      <ns0:outgoing>Flow_centralskl_to_join</ns0:outgoing>
+    </ns0:scriptTask>
+    <ns0:scriptTask id="Task_Peremeshenie" name="Перемещение">
+      <ns0:extensionElements>
+        <ns2:script expression="= null" resultVariable="stub" />
+      </ns0:extensionElements>
+      <ns0:incoming>Flow_gw_to_peremeshenie</ns0:incoming>
+      <ns0:outgoing>Flow_peremeshenie_to_join</ns0:outgoing>
+    </ns0:scriptTask>
+    <ns0:scriptTask id="Task_RS" name="РС">
+      <ns0:extensionElements>
+        <ns2:script expression="= null" resultVariable="stub" />
+      </ns0:extensionElements>
+      <ns0:incoming>Flow_gw_to_rs</ns0:incoming>
+      <ns0:outgoing>Flow_rs_to_join</ns0:outgoing>
+    </ns0:scriptTask>
+    <ns0:scriptTask id="Task_VPuti" name="В пути">
+      <ns0:extensionElements>
+        <ns2:script expression="= null" resultVariable="stub" />
+      </ns0:extensionElements>
+      <ns0:incoming>Flow_gw_to_vputi</ns0:incoming>
+      <ns0:outgoing>Flow_vputi_to_join</ns0:outgoing>
+    </ns0:scriptTask>
+    <ns0:scriptTask id="Task_RegSklad" name="Региональный склад">
+      <ns0:extensionElements>
+        <ns2:script expression="= null" resultVariable="stub" />
+      </ns0:extensionElements>
+      <ns0:incoming>Flow_gw_to_regsklad</ns0:incoming>
+      <ns0:outgoing>Flow_regsklad_to_join</ns0:outgoing>
+    </ns0:scriptTask>
+    <ns0:scriptTask id="Task_Tranzit" name="Транзит">
+      <ns0:extensionElements>
+        <ns2:script expression="= null" resultVariable="stub" />
+      </ns0:extensionElements>
+      <ns0:incoming>Flow_gw_to_tranzit</ns0:incoming>
+      <ns0:outgoing>Flow_tranzit_to_join</ns0:outgoing>
+    </ns0:scriptTask>
+    <ns0:scriptTask id="Task_PeresTT" name="Перемещение на ТТ">
+      <ns0:extensionElements>
+        <ns2:script expression="= null" resultVariable="stub" />
+      </ns0:extensionElements>
+      <ns0:incoming>Flow_gw_to_peremes_natt</ns0:incoming>
+      <ns0:outgoing>Flow_peremes_natt_to_join</ns0:outgoing>
+    </ns0:scriptTask>
+    <ns0:scriptTask id="Task_Tochka" name="Торговая точка">
+      <ns0:extensionElements>
+        <ns2:script expression="= null" resultVariable="stub" />
+      </ns0:extensionElements>
+      <ns0:incoming>Flow_gw_to_tochka</ns0:incoming>
+      <ns0:outgoing>Flow_tochka_to_join</ns0:outgoing>
+    </ns0:scriptTask>
+    <ns0:scriptTask id="Task_ReadyToShip" name="Готов к отгрузке">
+      <ns0:extensionElements>
+        <ns2:script expression="= null" resultVariable="stub" />
+      </ns0:extensionElements>
+      <ns0:incoming>Flow_gw_to_ready</ns0:incoming>
+      <ns0:outgoing>Flow_ready_to_join</ns0:outgoing>
+    </ns0:scriptTask>
+    <ns0:scriptTask id="Task_Smezhnyy" name="Смежный склад">
+      <ns0:extensionElements>
+        <ns2:script expression="= null" resultVariable="stub" />
+      </ns0:extensionElements>
+      <ns0:incoming>Flow_gw_to_smezhnyy</ns0:incoming>
+      <ns0:outgoing>Flow_smezhnyy_to_join</ns0:outgoing>
+    </ns0:scriptTask>
+    <ns0:scriptTask id="Task_Otgruzka" name="Отгрузка завершена">
+      <ns0:extensionElements>
+        <ns2:script expression="= null" resultVariable="stub" />
+      </ns0:extensionElements>
+      <ns0:incoming>Flow_gw_to_otgruzka</ns0:incoming>
+      <ns0:outgoing>Flow_otgruzka_to_join</ns0:outgoing>
+    </ns0:scriptTask>
+    <ns0:scriptTask id="Task_Vypolnen" name="Выполнен">
+      <ns0:extensionElements>
+        <ns2:script expression="= null" resultVariable="stub" />
+      </ns0:extensionElements>
+      <ns0:incoming>Flow_gw_to_vypolnen</ns0:incoming>
+      <ns0:outgoing>Flow_vypolnen_to_end</ns0:outgoing>
+    </ns0:scriptTask>
+    <ns0:scriptTask id="Task_Otmenen" name="Отменен">
+      <ns0:extensionElements>
+        <ns2:script expression="= null" resultVariable="stub" />
+      </ns0:extensionElements>
+      <ns0:incoming>Flow_gw_to_otmenen</ns0:incoming>
+      <ns0:outgoing>Flow_otmenen_to_end</ns0:outgoing>
+    </ns0:scriptTask>
+    <ns0:scriptTask id="Task_Unknown" name="Неизвестный статус">
+      <ns0:extensionElements>
+        <ns2:script expression="= null" resultVariable="stub" />
+      </ns0:extensionElements>
+      <ns0:incoming>Flow_gw_to_unknown</ns0:incoming>
+      <ns0:outgoing>Flow_unknown_to_join</ns0:outgoing>
+    </ns0:scriptTask>
+    <ns0:exclusiveGateway id="GW_StageJoin" name="Слияние этапов">
+      <ns0:incoming>Flow_oformlyaemy_to_join</ns0:incoming>
+      <ns0:incoming>Flow_ispolnyaemy_to_join</ns0:incoming>
+      <ns0:incoming>Flow_vnimanie_to_join</ns0:incoming>
+      <ns0:incoming>Flow_netkani_to_join</ns0:incoming>
+      <ns0:incoming>Flow_ozhidanie_to_join</ns0:incoming>
+      <ns0:incoming>Flow_zhduoplatu_to_join</ns0:incoming>
+      <ns0:incoming>Flow_kovrov_to_join</ns0:incoming>
+      <ns0:incoming>Flow_nsk_to_join</ns0:incoming>
+      <ns0:incoming>Flow_kovrov_plan_to_join</ns0:incoming>
+      <ns0:incoming>Flow_nsk_plan_to_join</ns0:incoming>
+      <ns0:incoming>Flow_delivery_to_join</ns0:incoming>
+      <ns0:incoming>Flow_centralskl_to_join</ns0:incoming>
+      <ns0:incoming>Flow_peremeshenie_to_join</ns0:incoming>
+      <ns0:incoming>Flow_rs_to_join</ns0:incoming>
+      <ns0:incoming>Flow_vputi_to_join</ns0:incoming>
+      <ns0:incoming>Flow_regsklad_to_join</ns0:incoming>
+      <ns0:incoming>Flow_tranzit_to_join</ns0:incoming>
+      <ns0:incoming>Flow_peremes_natt_to_join</ns0:incoming>
+      <ns0:incoming>Flow_tochka_to_join</ns0:incoming>
+      <ns0:incoming>Flow_ready_to_join</ns0:incoming>
+      <ns0:incoming>Flow_smezhnyy_to_join</ns0:incoming>
+      <ns0:incoming>Flow_otgruzka_to_join</ns0:incoming>
+      <ns0:incoming>Flow_unknown_to_join</ns0:incoming>
+      <ns0:outgoing>Flow_join_to_ebg</ns0:outgoing>
+    </ns0:exclusiveGateway>
+    <ns0:eventBasedGateway id="EBG_WaitUpdate" name="Ожидание&#10;обновления статуса">
+      <ns0:incoming>Flow_join_to_ebg</ns0:incoming>
+      <ns0:outgoing>Flow_ebg_to_catch</ns0:outgoing>
+      <ns0:outgoing>Flow_ebg_to_timer</ns0:outgoing>
+    </ns0:eventBasedGateway>
+    <ns0:intermediateCatchEvent id="Catch_NextStatus" name="Обновление статуса&#10;из Kafka" ns2:modelerTemplate="io.camunda.connectors.inbound.KafkaIntermediate.v1" ns2:modelerTemplateVersion="7" ns2:modelerTemplateIcon="data:image/svg+xml;base64,PHN2ZyB3aWR0aD0nMTgnIGhlaWdodD0nMTgnIHZpZXdCb3g9JzAgMCAyNTYgNDE2JyB4bWxucz0naHR0cDovL3d3dy53My5vcmcvMjAwMC9zdmcnIHByZXNlcnZlQXNwZWN0UmF0aW89J3hNaWRZTWlkJz4KICAgIDxwYXRoIGQ9J00yMDEuODE2IDIzMC4yMTZjLTE2LjE4NiAwLTMwLjY5NyA3LjE3MS00MC42MzQgMTguNDYxbC0yNS40NjMtMTguMDI2YzIuNzAzLTcuNDQyIDQuMjU1LTE1LjQzMyA0LjI1NS0yMy43OTcgMC04LjIxOS0xLjQ5OC0xNi4wNzYtNC4xMTItMjMuNDA4bDI1LjQwNi0xNy44MzVjOS45MzYgMTEuMjMzIDI0LjQwOSAxOC4zNjUgNDAuNTQ4IDE4LjM2NSAyOS44NzUgMCA1NC4xODQtMjQuMzA1IDU0LjE4NC01NC4xODQgMC0yOS44NzktMjQuMzA5LTU0LjE4NC01NC4xODQtNTQuMTg0LTI5Ljg3NSAwLTU0LjE4NCAyNC4zMDUtNTQuMTg0IDU0LjE4NCAwIDUuMzQ4LjgwOCAxMC41MDUgMi4yNTggMTUuMzg5bC0yNS40MjMgMTcuODQ0Yy0xMC42Mi0xMy4xNzUtMjUuOTExLTIyLjM3NC00My4zMzMtMjUuMTgydi0zMC42NGMyNC41NDQtNS4xNTUgNDMuMDM3LTI2Ljk2MiA0My4wMzctNTMuMDE5QzEyNC4xNzEgMjQuMzA1IDk5Ljg2MiAwIDY5Ljk4NyAwIDQwLjExMiAwIDE1LjgwMyAyNC4zMDUgMTUuODAzIDU0LjE4NGMwIDI1LjcwOCAxOC4wMTQgNDcuMjQ2IDQyLjA2NyA1Mi43Njl2MzEuMDM4QzI1LjA0NCAxNDMuNzUzIDAgMTcyLjQwMSAwIDIwNi44NTRjMCAzNC42MjEgMjUuMjkyIDYzLjM3NCA1OC4zNTUgNjguOTR2MzIuNzc0Yy0yNC4yOTkgNS4zNDEtNDIuNTUyIDI3LjAxMS00Mi41NTIgNTIuODk0IDAgMjkuODc5IDI0LjMwOSA1NC4xODQgNTQuMTg0IDU0LjE4NCAyOS44NzUgMCA1NC4xODQtMjQuMzA1IDU0LjE4NC01NC4xODQgMC0yNS44ODMtMTguMjUzLTQ3LjU1My00Mi41NTItNTIuODk0di0zMi43NzVhNjkuOTY1IDY5Ljk2NSAwIDAgMCA0Mi42LTI0Ljc3NmwyNS42MzMgMTguMTQzYy0xLjQyMyA0Ljg0LTIuMjIgOS45NDYtMi4yMiAxNS4yNCAwIDI5Ljg3OSAyNC4zMDkgNTQuMTg0IDU0LjE4NCA1NC4xODQgMjkuODc1IDAgNTQuMTg0LTI0LjMwNSA1NC4xODQtNTQuMTg0IDAtMjkuODc5LTI0LjMwOS01NC4xODQtNTQuMTg0LTU0LjE4NHptMC0xMjYuNjk1YzE0LjQ4NyAwIDI2LjI3IDExLjc4OCAyNi4yNyAyNi4yNzFzLTExLjc4MyAyNi4yNyAyNi4yNyAyNi4yNy0yNi4yNy0xMS43ODctMjYuMjctMjYuMjdjMC0xNC40ODMgMTEuNzgzLTI2LjI3MSAyNi4yNy0yNi4yNzF6bS0xNTguMS00OS4zMzdjMC0xNC40ODMgMTEuNzg0LTI2LjI3IDI2LjI3MS0yNi4yN3MyNi4yNyAxMS43ODcgMjYuMjcgMjYuMjdjMCAxNC40ODMtMTEuNzgzIDI2LjI3LTI2LjI3IDI2LjI3cy0yNi4yNzEtMTEuNzg3LTI2LjI3MS0yNi4yN3ptNTIuNTQxIDMwNy4yNzhjMCAxNC40ODMtMTEuNzgzIDI2LjI3LTI2LjI3IDI2LjI3cy0yNi4yNzEtMTEuNzg3LTI2LjI3MS0yNi4yN2MwLTE0LjQ4MyAxMS43ODQtMjYuMjcgMjYuMjcxLTI2LjI3czI2LjI3IDExLjc4NyAyNi4yNyAyNi4yN3ptLTI2LjI3Mi0xMTcuOTdjLTIwLjIwNSAwLTM2LjY0Mi0xNi40MzQtMzYuNjQyLTM2LjYzOCAwLTIwLjIwNSAxNi40MzctMzYuNjQyIDM2LjY0Mi0zNi42NDIgMjAuMjA0IDAgMzYuNjQxIDE2LjQzNyAzNi42NDEgMzYuNjQyIDAgMjAuMjA0LTE2LjQzNyAzNi42MzgtMzYuNjQxIDM2LjYzOHptMTMxLjgzMSA2Ny4xNzljLTE0LjQ4NyAwLTI2LjI3LTExLjc4OC0yNi4yNy0yNi4yNzFzMTEuNzgzLTI2LjI3IDI2LjI3LTI2LjI3IDI2LjI3IDExLjc4NyAyNi4yNyAyNi4yN2MwIDE0LjQ4My0xMS43ODMgMjYuMjcxLTI2LjI3IDI2LjI3MXonCiAgICAgICAgICBzdHlsZT0nZmlsbDojMjMxZjIwJy8+Cjwvc3ZnPg==">
+      <ns0:extensionElements>
+        <ns2:properties>
+          <ns2:property name="inbound.type" value="io.camunda:connector-kafka-inbound:1" />
+          <ns2:property name="authenticationType" value="credentials" />
+          <ns2:property name="topic.bootstrapServers" value="localhost:9092" />
+          <ns2:property name="topic.topicName" value="all_orders" />
+          <ns2:property name="groupId" value="camunda-lc-next" />
+          <ns2:property name="autoOffsetReset" value="earliest" />
+          <ns2:property name="schemaStrategy.type" value="schemaRegistry" />
+          <ns2:property name="schemaStrategy.schemaType" value="avro" />
+          <ns2:property name="schemaStrategy.schemaRegistryUrl" value="http://localhost:8082" />
+          <ns2:property name="consumeUnmatchedEvents" value="true" />
+          <ns2:property name="correlationKeyExpression" value="= string(value.messageObject.number)" />
+          <ns2:property name="deduplicationModeManualFlag" value="false" />
+          <ns2:property name="deduplicationMode" value="AUTO" />
+          <ns2:property name="resultVariable" value="" />
+          <ns2:property name="resultExpression" value="= {&#10;  orderId       : string(value.messageObject.id),&#10;  orderNumber   : string(value.messageObject.number),&#10;  orderStatusId : value.messageObject.statusId,&#10;  stateName     : string(value.messageObject.stateName),&#10;  shopId        : string(value.messageObject.shopId),&#10;  managerId     : string(value.messageObject.managerId),&#10;  paymentTypeId : string(value.messageObject.paymentTypeId),&#10;  orderComment  : string(value.messageObject.comment),&#10;  correlationId : string(value.metadata.correlationId),&#10;  orderPayload  : value&#10;}" />
+        </ns2:properties>
+      </ns0:extensionElements>
+      <ns0:incoming>Flow_ebg_to_catch</ns0:incoming>
+      <ns0:outgoing>Flow_catch_to_gw</ns0:outgoing>
+      <ns0:messageEventDefinition id="MsgDef_Catch" messageRef="Message_OrderLifecycle" />
+    </ns0:intermediateCatchEvent>
+    <ns0:intermediateCatchEvent id="Timer_Timeout" name="30 дней таймаут">
+      <ns0:incoming>Flow_ebg_to_timer</ns0:incoming>
+      <ns0:outgoing>Flow_timer_to_end</ns0:outgoing>
+      <ns0:timerEventDefinition id="TimerDef_Timeout">
+        <ns0:timeDuration>="P30D"</ns0:timeDuration>
+      </ns0:timerEventDefinition>
+    </ns0:intermediateCatchEvent>
+    <ns0:endEvent id="End_Timeout" name="Таймаут ожидания">
+      <ns0:incoming>Flow_timer_to_end</ns0:incoming>
+    </ns0:endEvent>
+    <ns0:endEvent id="End_InvalidOrder" name="Нет номера заказа">
+      <ns0:incoming>Flow_validate_to_invalid</ns0:incoming>
+    </ns0:endEvent>
+    <ns0:endEvent id="End_Vypolnen" name="Выполнен">
+      <ns0:incoming>Flow_vypolnen_to_end</ns0:incoming>
+    </ns0:endEvent>
+    <ns0:endEvent id="End_Otmenen" name="Отменен">
+      <ns0:incoming>Flow_otmenen_to_end</ns0:incoming>
+    </ns0:endEvent>
+    <ns0:sequenceFlow id="Flow_start_to_validate" sourceRef="Start_OrderKafka" targetRef="GW_ValidateStart" />
+    <ns0:sequenceFlow id="Flow_validate_to_gw" name="Корректный заказ" sourceRef="GW_ValidateStart" targetRef="GW_LoopJoin">
+      <ns0:conditionExpression>= orderNumber != null</ns0:conditionExpression>
+    </ns0:sequenceFlow>
+    <ns0:sequenceFlow id="Flow_validate_to_invalid" sourceRef="GW_ValidateStart" targetRef="End_InvalidOrder" />
+    <ns0:sequenceFlow id="Flow_join_to_route" sourceRef="GW_LoopJoin" targetRef="GW_RouteByStatus" />
+    <ns0:sequenceFlow id="Flow_gw_to_oformlyaemy" name="Оформляемый" sourceRef="GW_RouteByStatus" targetRef="Task_Oformlyaemy">
+      <ns0:conditionExpression>= orderStatusId = "C0003089DD24DC9A"</ns0:conditionExpression>
+    </ns0:sequenceFlow>
+    <ns0:sequenceFlow id="Flow_gw_to_ispolnyaemy" name="Исполняемый" sourceRef="GW_RouteByStatus" targetRef="Task_Ispolnyaemy">
+      <ns0:conditionExpression>= orderStatusId = "C0008686474408E5"</ns0:conditionExpression>
+    </ns0:sequenceFlow>
+    <ns0:sequenceFlow id="Flow_gw_to_vnimanie" name="Внимание" sourceRef="GW_RouteByStatus" targetRef="Task_Vnimanie">
+      <ns0:conditionExpression>= orderStatusId = "80010000000020AE"</ns0:conditionExpression>
+    </ns0:sequenceFlow>
+    <ns0:sequenceFlow id="Flow_gw_to_netkani" name="Нет ткани" sourceRef="GW_RouteByStatus" targetRef="Task_NetKani">
+      <ns0:conditionExpression>= orderStatusId = "80010000000020A4"</ns0:conditionExpression>
+    </ns0:sequenceFlow>
+    <ns0:sequenceFlow id="Flow_gw_to_ozhidanie" name="Ожидание" sourceRef="GW_RouteByStatus" targetRef="Task_Ozhidanie">
+      <ns0:conditionExpression>= orderStatusId = "8001000000001523"</ns0:conditionExpression>
+    </ns0:sequenceFlow>
+    <ns0:sequenceFlow id="Flow_gw_to_zhduoplatu" name="Жду оплату" sourceRef="GW_RouteByStatus" targetRef="Task_ZhduOplatu">
+      <ns0:conditionExpression>= orderStatusId = "8001000000001564"</ns0:conditionExpression>
+    </ns0:sequenceFlow>
+    <ns0:sequenceFlow id="Flow_gw_to_kovrov" name="Обр. Ковров" sourceRef="GW_RouteByStatus" targetRef="Task_KovrovProcessing">
+      <ns0:conditionExpression>= orderStatusId = "8001000000001500"</ns0:conditionExpression>
+    </ns0:sequenceFlow>
+    <ns0:sequenceFlow id="Flow_gw_to_nsk" name="Обр. Новосибирск" sourceRef="GW_RouteByStatus" targetRef="Task_NskProcessing">
+      <ns0:conditionExpression>= orderStatusId = "8001000000001501"</ns0:conditionExpression>
+    </ns0:sequenceFlow>
+    <ns0:sequenceFlow id="Flow_gw_to_kovrov_plan" name="Ковров план." sourceRef="GW_RouteByStatus" targetRef="Task_KovrovPlanning">
+      <ns0:conditionExpression>= orderStatusId = "800100000000011F"</ns0:conditionExpression>
+    </ns0:sequenceFlow>
+    <ns0:sequenceFlow id="Flow_gw_to_nsk_plan" name="Новосиб. план." sourceRef="GW_RouteByStatus" targetRef="Task_NskPlanning">
+      <ns0:conditionExpression>= orderStatusId = "8001000000000120"</ns0:conditionExpression>
+    </ns0:sequenceFlow>
+    <ns0:sequenceFlow id="Flow_gw_to_delivery" name="Поставка" sourceRef="GW_RouteByStatus" targetRef="Task_Delivery">
+      <ns0:conditionExpression>= orderStatusId = "8001000000000121"</ns0:conditionExpression>
+    </ns0:sequenceFlow>
+    <ns0:sequenceFlow id="Flow_gw_to_centralskl" name="Центральный склад" sourceRef="GW_RouteByStatus" targetRef="Task_CentralSkl">
+      <ns0:conditionExpression>= orderStatusId = "80010000000020A9"</ns0:conditionExpression>
+    </ns0:sequenceFlow>
+    <ns0:sequenceFlow id="Flow_gw_to_peremeshenie" name="Перемещение" sourceRef="GW_RouteByStatus" targetRef="Task_Peremeshenie">
+      <ns0:conditionExpression>= orderStatusId = "80010000000034F4"</ns0:conditionExpression>
+    </ns0:sequenceFlow>
+    <ns0:sequenceFlow id="Flow_gw_to_rs" name="РС" sourceRef="GW_RouteByStatus" targetRef="Task_RS">
+      <ns0:conditionExpression>= orderStatusId = "80010000000034F5"</ns0:conditionExpression>
+    </ns0:sequenceFlow>
+    <ns0:sequenceFlow id="Flow_gw_to_vputi" name="В пути" sourceRef="GW_RouteByStatus" targetRef="Task_VPuti">
+      <ns0:conditionExpression>= orderStatusId = "800100000000195B"</ns0:conditionExpression>
+    </ns0:sequenceFlow>
+    <ns0:sequenceFlow id="Flow_gw_to_regsklad" name="Рег. склад" sourceRef="GW_RouteByStatus" targetRef="Task_RegSklad">
+      <ns0:conditionExpression>= orderStatusId = "80010000000020B3"</ns0:conditionExpression>
+    </ns0:sequenceFlow>
+    <ns0:sequenceFlow id="Flow_gw_to_tranzit" name="Транзит" sourceRef="GW_RouteByStatus" targetRef="Task_Tranzit">
+      <ns0:conditionExpression>= orderStatusId = "8001000000003E0E"</ns0:conditionExpression>
+    </ns0:sequenceFlow>
+    <ns0:sequenceFlow id="Flow_gw_to_peremes_natt" name="Перемещение на ТТ" sourceRef="GW_RouteByStatus" targetRef="Task_PeresTT">
+      <ns0:conditionExpression>= orderStatusId = "80010000000020B4"</ns0:conditionExpression>
+    </ns0:sequenceFlow>
+    <ns0:sequenceFlow id="Flow_gw_to_tochka" name="Торговая точка" sourceRef="GW_RouteByStatus" targetRef="Task_Tochka">
+      <ns0:conditionExpression>= orderStatusId = "80010000000020B5"</ns0:conditionExpression>
+    </ns0:sequenceFlow>
+    <ns0:sequenceFlow id="Flow_gw_to_ready" name="Готов к отгрузке" sourceRef="GW_RouteByStatus" targetRef="Task_ReadyToShip">
+      <ns0:conditionExpression>= orderStatusId = "8001000000000122"</ns0:conditionExpression>
+    </ns0:sequenceFlow>
+    <ns0:sequenceFlow id="Flow_gw_to_smezhnyy" name="Смежный склад" sourceRef="GW_RouteByStatus" targetRef="Task_Smezhnyy">
+      <ns0:conditionExpression>= orderStatusId = "80010000000052A0"</ns0:conditionExpression>
+    </ns0:sequenceFlow>
+    <ns0:sequenceFlow id="Flow_gw_to_otgruzka" name="Отгрузка завершена" sourceRef="GW_RouteByStatus" targetRef="Task_Otgruzka">
+      <ns0:conditionExpression>= orderStatusId = "8001000000000154"</ns0:conditionExpression>
+    </ns0:sequenceFlow>
+    <ns0:sequenceFlow id="Flow_gw_to_vypolnen" name="Выполнен" sourceRef="GW_RouteByStatus" targetRef="Task_Vypolnen">
+      <ns0:conditionExpression>= orderStatusId = "8001000000000118"</ns0:conditionExpression>
+    </ns0:sequenceFlow>
+    <ns0:sequenceFlow id="Flow_gw_to_otmenen" name="Отменен" sourceRef="GW_RouteByStatus" targetRef="Task_Otmenen">
+      <ns0:conditionExpression>= orderStatusId = "8010000000000108"</ns0:conditionExpression>
+    </ns0:sequenceFlow>
+    <ns0:sequenceFlow id="Flow_gw_to_unknown" name="Неизвестный" sourceRef="GW_RouteByStatus" targetRef="Task_Unknown" />
+    <ns0:sequenceFlow id="Flow_oformlyaemy_to_join" sourceRef="Task_Oformlyaemy" targetRef="GW_StageJoin" />
+    <ns0:sequenceFlow id="Flow_ispolnyaemy_to_join" sourceRef="Task_Ispolnyaemy" targetRef="GW_StageJoin" />
+    <ns0:sequenceFlow id="Flow_vnimanie_to_join" sourceRef="Task_Vnimanie" targetRef="GW_StageJoin" />
+    <ns0:sequenceFlow id="Flow_netkani_to_join" sourceRef="Task_NetKani" targetRef="GW_StageJoin" />
+    <ns0:sequenceFlow id="Flow_ozhidanie_to_join" sourceRef="Task_Ozhidanie" targetRef="GW_StageJoin" />
+    <ns0:sequenceFlow id="Flow_zhduoplatu_to_join" sourceRef="Task_ZhduOplatu" targetRef="GW_StageJoin" />
+    <ns0:sequenceFlow id="Flow_kovrov_to_join" sourceRef="Task_KovrovProcessing" targetRef="GW_StageJoin" />
+    <ns0:sequenceFlow id="Flow_nsk_to_join" sourceRef="Task_NskProcessing" targetRef="GW_StageJoin" />
+    <ns0:sequenceFlow id="Flow_kovrov_plan_to_join" sourceRef="Task_KovrovPlanning" targetRef="GW_StageJoin" />
+    <ns0:sequenceFlow id="Flow_nsk_plan_to_join" sourceRef="Task_NskPlanning" targetRef="GW_StageJoin" />
+    <ns0:sequenceFlow id="Flow_delivery_to_join" sourceRef="Task_Delivery" targetRef="GW_StageJoin" />
+    <ns0:sequenceFlow id="Flow_centralskl_to_join" sourceRef="Task_CentralSkl" targetRef="GW_StageJoin" />
+    <ns0:sequenceFlow id="Flow_peremeshenie_to_join" sourceRef="Task_Peremeshenie" targetRef="GW_StageJoin" />
+    <ns0:sequenceFlow id="Flow_rs_to_join" sourceRef="Task_RS" targetRef="GW_StageJoin" />
+    <ns0:sequenceFlow id="Flow_vputi_to_join" sourceRef="Task_VPuti" targetRef="GW_StageJoin" />
+    <ns0:sequenceFlow id="Flow_regsklad_to_join" sourceRef="Task_RegSklad" targetRef="GW_StageJoin" />
+    <ns0:sequenceFlow id="Flow_tranzit_to_join" sourceRef="Task_Tranzit" targetRef="GW_StageJoin" />
+    <ns0:sequenceFlow id="Flow_peremes_natt_to_join" sourceRef="Task_PeresTT" targetRef="GW_StageJoin" />
+    <ns0:sequenceFlow id="Flow_tochka_to_join" sourceRef="Task_Tochka" targetRef="GW_StageJoin" />
+    <ns0:sequenceFlow id="Flow_ready_to_join" sourceRef="Task_ReadyToShip" targetRef="GW_StageJoin" />
+    <ns0:sequenceFlow id="Flow_smezhnyy_to_join" sourceRef="Task_Smezhnyy" targetRef="GW_StageJoin" />
+    <ns0:sequenceFlow id="Flow_otgruzka_to_join" sourceRef="Task_Otgruzka" targetRef="GW_StageJoin" />
+    <ns0:sequenceFlow id="Flow_unknown_to_join" sourceRef="Task_Unknown" targetRef="GW_StageJoin" />
+    <ns0:sequenceFlow id="Flow_vypolnen_to_end" sourceRef="Task_Vypolnen" targetRef="End_Vypolnen" />
+    <ns0:sequenceFlow id="Flow_otmenen_to_end" sourceRef="Task_Otmenen" targetRef="End_Otmenen" />
+    <ns0:sequenceFlow id="Flow_join_to_ebg" name="Этап обработан" sourceRef="GW_StageJoin" targetRef="EBG_WaitUpdate" />
+    <ns0:sequenceFlow id="Flow_ebg_to_catch" name="Новый статус" sourceRef="EBG_WaitUpdate" targetRef="Catch_NextStatus" />
+    <ns0:sequenceFlow id="Flow_ebg_to_timer" name="Таймаут 30 дней" sourceRef="EBG_WaitUpdate" targetRef="Timer_Timeout" />
+    <ns0:sequenceFlow id="Flow_timer_to_end" sourceRef="Timer_Timeout" targetRef="End_Timeout" />
+    <ns0:sequenceFlow id="Flow_catch_to_gw" name="Статус обновлен" sourceRef="Catch_NextStatus" targetRef="GW_LoopJoin" />
+  </ns0:process>
+  <ns0:message id="Message_OrderLifecycle" name="order-lifecycle-event">
+    <ns0:extensionElements>
+      <ns2:subscription correlationKey="= orderNumber" />
+    </ns0:extensionElements>
+  </ns0:message>
+  <ns3:BPMNDiagram id="BPMNDiagram_1">
+    <ns3:BPMNPlane id="BPMNPlane_1" bpmnElement="Process_OrderLifecycle">
+      <ns3:BPMNShape id="Start_OrderKafka_di" bpmnElement="Start_OrderKafka">
+        <ns4:Bounds x="152" y="242" width="36" height="36" />
+        <ns3:BPMNLabel>
+          <ns4:Bounds x="133" y="285" width="75" height="14" />
+        </ns3:BPMNLabel>
+      </ns3:BPMNShape>
+      <ns3:BPMNShape id="GW_ValidateStart_di" bpmnElement="GW_ValidateStart" isMarkerVisible="true">
+        <ns4:Bounds x="290" y="235" width="50" height="50" />
+        <ns3:BPMNLabel>
+          <ns4:Bounds x="278" y="205" width="73" height="27" />
+        </ns3:BPMNLabel>
+      </ns3:BPMNShape>
+      <ns3:BPMNShape id="GW_LoopJoin_di" bpmnElement="GW_LoopJoin" isMarkerVisible="true">
+        <ns4:Bounds x="448" y="235" width="50" height="50" />
+        <ns3:BPMNLabel>
+          <ns4:Bounds x="438" y="295" width="70" height="14" />
+        </ns3:BPMNLabel>
+      </ns3:BPMNShape>
+      <ns3:BPMNShape id="GW_RouteByStatus_di" bpmnElement="GW_RouteByStatus" isMarkerVisible="true">
+        <ns4:Bounds x="598" y="235" width="50" height="50" />
+        <ns3:BPMNLabel>
+          <ns4:Bounds x="528" y="278" width="83" height="27" />
+        </ns3:BPMNLabel>
+      </ns3:BPMNShape>
+      <ns3:BPMNShape id="Task_Oformlyaemy_di" bpmnElement="Task_Oformlyaemy">
+        <ns4:Bounds x="770" y="220" width="100" height="80" />
+        <ns3:BPMNLabel />
+      </ns3:BPMNShape>
+      <ns3:BPMNShape id="Task_Ispolnyaemy_di" bpmnElement="Task_Ispolnyaemy">
+        <ns4:Bounds x="770" y="320" width="100" height="80" />
+        <ns3:BPMNLabel />
+      </ns3:BPMNShape>
+      <ns3:BPMNShape id="Task_Vnimanie_di" bpmnElement="Task_Vnimanie">
+        <ns4:Bounds x="770" y="420" width="100" height="80" />
+        <ns3:BPMNLabel />
+      </ns3:BPMNShape>
+      <ns3:BPMNShape id="Task_NetKani_di" bpmnElement="Task_NetKani">
+        <ns4:Bounds x="770" y="520" width="100" height="80" />
+        <ns3:BPMNLabel />
+      </ns3:BPMNShape>
+      <ns3:BPMNShape id="Task_Ozhidanie_di" bpmnElement="Task_Ozhidanie">
+        <ns4:Bounds x="770" y="620" width="100" height="80" />
+        <ns3:BPMNLabel />
+      </ns3:BPMNShape>
+      <ns3:BPMNShape id="Task_ZhduOplatu_di" bpmnElement="Task_ZhduOplatu">
+        <ns4:Bounds x="770" y="720" width="100" height="80" />
+        <ns3:BPMNLabel />
+      </ns3:BPMNShape>
+      <ns3:BPMNShape id="Task_KovrovProcessing_di" bpmnElement="Task_KovrovProcessing">
+        <ns4:Bounds x="770" y="820" width="100" height="80" />
+        <ns3:BPMNLabel />
+      </ns3:BPMNShape>
+      <ns3:BPMNShape id="Task_NskProcessing_di" bpmnElement="Task_NskProcessing">
+        <ns4:Bounds x="770" y="920" width="100" height="80" />
+        <ns3:BPMNLabel />
+      </ns3:BPMNShape>
+      <ns3:BPMNShape id="Task_KovrovPlanning_di" bpmnElement="Task_KovrovPlanning">
+        <ns4:Bounds x="770" y="1020" width="100" height="80" />
+        <ns3:BPMNLabel />
+      </ns3:BPMNShape>
+      <ns3:BPMNShape id="Task_NskPlanning_di" bpmnElement="Task_NskPlanning">
+        <ns4:Bounds x="770" y="1120" width="100" height="80" />
+        <ns3:BPMNLabel />
+      </ns3:BPMNShape>
+      <ns3:BPMNShape id="Task_Delivery_di" bpmnElement="Task_Delivery">
+        <ns4:Bounds x="770" y="1220" width="100" height="80" />
+        <ns3:BPMNLabel />
+      </ns3:BPMNShape>
+      <ns3:BPMNShape id="Task_CentralSkl_di" bpmnElement="Task_CentralSkl">
+        <ns4:Bounds x="770" y="1320" width="100" height="80" />
+        <ns3:BPMNLabel />
+      </ns3:BPMNShape>
+      <ns3:BPMNShape id="Task_Peremeshenie_di" bpmnElement="Task_Peremeshenie">
+        <ns4:Bounds x="770" y="1420" width="100" height="80" />
+        <ns3:BPMNLabel />
+      </ns3:BPMNShape>
+      <ns3:BPMNShape id="Task_RS_di" bpmnElement="Task_RS">
+        <ns4:Bounds x="770" y="1520" width="100" height="80" />
+        <ns3:BPMNLabel />
+      </ns3:BPMNShape>
+      <ns3:BPMNShape id="Task_VPuti_di" bpmnElement="Task_VPuti">
+        <ns4:Bounds x="770" y="1620" width="100" height="80" />
+        <ns3:BPMNLabel />
+      </ns3:BPMNShape>
+      <ns3:BPMNShape id="Task_RegSklad_di" bpmnElement="Task_RegSklad">
+        <ns4:Bounds x="770" y="1720" width="100" height="80" />
+        <ns3:BPMNLabel />
+      </ns3:BPMNShape>
+      <ns3:BPMNShape id="Task_Tranzit_di" bpmnElement="Task_Tranzit">
+        <ns4:Bounds x="770" y="1820" width="100" height="80" />
+        <ns3:BPMNLabel />
+      </ns3:BPMNShape>
+      <ns3:BPMNShape id="Task_PeresTT_di" bpmnElement="Task_PeresTT">
+        <ns4:Bounds x="770" y="1920" width="100" height="80" />
+        <ns3:BPMNLabel />
+      </ns3:BPMNShape>
+      <ns3:BPMNShape id="Task_Tochka_di" bpmnElement="Task_Tochka">
+        <ns4:Bounds x="770" y="2020" width="100" height="80" />
+        <ns3:BPMNLabel />
+      </ns3:BPMNShape>
+      <ns3:BPMNShape id="Task_ReadyToShip_di" bpmnElement="Task_ReadyToShip">
+        <ns4:Bounds x="770" y="2120" width="100" height="80" />
+        <ns3:BPMNLabel />
+      </ns3:BPMNShape>
+      <ns3:BPMNShape id="Task_Smezhnyy_di" bpmnElement="Task_Smezhnyy">
+        <ns4:Bounds x="770" y="2220" width="100" height="80" />
+        <ns3:BPMNLabel />
+      </ns3:BPMNShape>
+      <ns3:BPMNShape id="Task_Otgruzka_di" bpmnElement="Task_Otgruzka">
+        <ns4:Bounds x="770" y="2320" width="100" height="80" />
+        <ns3:BPMNLabel />
+      </ns3:BPMNShape>
+      <ns3:BPMNShape id="Task_Vypolnen_di" bpmnElement="Task_Vypolnen">
+        <ns4:Bounds x="770" y="2420" width="100" height="80" />
+        <ns3:BPMNLabel />
+      </ns3:BPMNShape>
+      <ns3:BPMNShape id="Task_Otmenen_di" bpmnElement="Task_Otmenen">
+        <ns4:Bounds x="770" y="2520" width="100" height="80" />
+        <ns3:BPMNLabel />
+      </ns3:BPMNShape>
+      <ns3:BPMNShape id="Task_Unknown_di" bpmnElement="Task_Unknown">
+        <ns4:Bounds x="770" y="2620" width="100" height="80" />
+        <ns3:BPMNLabel />
+      </ns3:BPMNShape>
+      <ns3:BPMNShape id="GW_StageJoin_di" bpmnElement="GW_StageJoin" isMarkerVisible="true">
+        <ns4:Bounds x="980" y="235" width="50" height="50" />
+        <ns3:BPMNLabel>
+          <ns4:Bounds x="964" y="215" width="83" height="14" />
+        </ns3:BPMNLabel>
+      </ns3:BPMNShape>
+      <ns3:BPMNShape id="EBG_WaitUpdate_di" bpmnElement="EBG_WaitUpdate">
+        <ns4:Bounds x="1120" y="235" width="50" height="50" />
+        <ns3:BPMNLabel>
+          <ns4:Bounds x="1179" y="240" width="61" height="40" />
+        </ns3:BPMNLabel>
+      </ns3:BPMNShape>
+      <ns3:BPMNShape id="Catch_NextStatus_di" bpmnElement="Catch_NextStatus">
+        <ns4:Bounds x="1127" y="132" width="36" height="36" />
+        <ns3:BPMNLabel>
+          <ns4:Bounds x="1113" y="90" width="64" height="40" />
+        </ns3:BPMNLabel>
+      </ns3:BPMNShape>
+      <ns3:BPMNShape id="Timer_Timeout_di" bpmnElement="Timer_Timeout">
+        <ns4:Bounds x="1240" y="320" width="36" height="36" />
+        <ns3:BPMNLabel>
+          <ns4:Bounds x="1222" y="362" width="85" height="14" />
+        </ns3:BPMNLabel>
+      </ns3:BPMNShape>
+      <ns3:BPMNShape id="End_Timeout_di" bpmnElement="End_Timeout">
+        <ns4:Bounds x="1400" y="320" width="36" height="36" />
+        <ns3:BPMNLabel>
+          <ns4:Bounds x="1394" y="363" width="51" height="27" />
+        </ns3:BPMNLabel>
+      </ns3:BPMNShape>
+      <ns3:BPMNShape id="End_InvalidOrder_di" bpmnElement="End_InvalidOrder">
+        <ns4:Bounds x="297" y="342" width="36" height="36" />
+        <ns3:BPMNLabel>
+          <ns4:Bounds x="285" y="385" width="60" height="27" />
+        </ns3:BPMNLabel>
+      </ns3:BPMNShape>
+      <ns3:BPMNShape id="End_Vypolnen_di" bpmnElement="End_Vypolnen">
+        <ns4:Bounds x="892" y="2442" width="36" height="36" />
+        <ns3:BPMNLabel>
+          <ns4:Bounds x="884" y="2485" width="52" height="14" />
+        </ns3:BPMNLabel>
+      </ns3:BPMNShape>
+      <ns3:BPMNShape id="End_Otmenen_di" bpmnElement="End_Otmenen">
+        <ns4:Bounds x="892" y="2542" width="36" height="36" />
+        <ns3:BPMNLabel>
+          <ns4:Bounds x="887" y="2585" width="46" height="14" />
+        </ns3:BPMNLabel>
+      </ns3:BPMNShape>
+      <ns3:BPMNEdge id="Flow_start_to_validate_di" bpmnElement="Flow_start_to_validate">
+        <ns5:waypoint x="188" y="260" />
+        <ns5:waypoint x="290" y="260" />
+      </ns3:BPMNEdge>
+      <ns3:BPMNEdge id="Flow_validate_to_gw_di" bpmnElement="Flow_validate_to_gw">
+        <ns5:waypoint x="340" y="260" />
+        <ns5:waypoint x="448" y="260" />
+        <ns3:BPMNLabel>
+          <ns4:Bounds x="363" y="234" width="61" height="27" />
+        </ns3:BPMNLabel>
+      </ns3:BPMNEdge>
+      <ns3:BPMNEdge id="Flow_validate_to_invalid_di" bpmnElement="Flow_validate_to_invalid">
+        <ns5:waypoint x="315" y="285" />
+        <ns5:waypoint x="315" y="342" />
+      </ns3:BPMNEdge>
+      <ns3:BPMNEdge id="Flow_join_to_route_di" bpmnElement="Flow_join_to_route">
+        <ns5:waypoint x="498" y="260" />
+        <ns5:waypoint x="598" y="260" />
+      </ns3:BPMNEdge>
+      <ns3:BPMNEdge id="Flow_gw_to_oformlyaemy_di" bpmnElement="Flow_gw_to_oformlyaemy">
+        <ns5:waypoint x="648" y="260" />
+        <ns5:waypoint x="770" y="260" />
+        <ns3:BPMNLabel>
+          <ns4:Bounds x="663" y="246" width="78" height="14" />
+        </ns3:BPMNLabel>
+      </ns3:BPMNEdge>
+      <ns3:BPMNEdge id="Flow_gw_to_ispolnyaemy_di" bpmnElement="Flow_gw_to_ispolnyaemy">
+        <ns5:waypoint x="623" y="285" />
+        <ns5:waypoint x="623" y="360" />
+        <ns5:waypoint x="770" y="360" />
+        <ns3:BPMNLabel>
+          <ns4:Bounds x="628" y="345" width="72" height="14" />
+        </ns3:BPMNLabel>
+      </ns3:BPMNEdge>
+      <ns3:BPMNEdge id="Flow_gw_to_vnimanie_di" bpmnElement="Flow_gw_to_vnimanie">
+        <ns5:waypoint x="623" y="285" />
+        <ns5:waypoint x="623" y="460" />
+        <ns5:waypoint x="770" y="460" />
+        <ns3:BPMNLabel>
+          <ns4:Bounds x="629" y="446" width="52" height="14" />
+        </ns3:BPMNLabel>
+      </ns3:BPMNEdge>
+      <ns3:BPMNEdge id="Flow_gw_to_netkani_di" bpmnElement="Flow_gw_to_netkani">
+        <ns5:waypoint x="623" y="285" />
+        <ns5:waypoint x="623" y="560" />
+        <ns5:waypoint x="770" y="560" />
+        <ns3:BPMNLabel>
+          <ns4:Bounds x="631" y="545" width="51" height="14" />
+        </ns3:BPMNLabel>
+      </ns3:BPMNEdge>
+      <ns3:BPMNEdge id="Flow_gw_to_ozhidanie_di" bpmnElement="Flow_gw_to_ozhidanie">
+        <ns5:waypoint x="623" y="285" />
+        <ns5:waypoint x="623" y="660" />
+        <ns5:waypoint x="770" y="660" />
+        <ns3:BPMNLabel>
+          <ns4:Bounds x="630" y="647" width="53" height="14" />
+        </ns3:BPMNLabel>
+      </ns3:BPMNEdge>
+      <ns3:BPMNEdge id="Flow_gw_to_zhduoplatu_di" bpmnElement="Flow_gw_to_zhduoplatu">
+        <ns5:waypoint x="623" y="285" />
+        <ns5:waypoint x="623" y="760" />
+        <ns5:waypoint x="770" y="760" />
+        <ns3:BPMNLabel>
+          <ns4:Bounds x="629" y="745" width="61" height="14" />
+        </ns3:BPMNLabel>
+      </ns3:BPMNEdge>
+      <ns3:BPMNEdge id="Flow_gw_to_kovrov_di" bpmnElement="Flow_gw_to_kovrov">
+        <ns5:waypoint x="623" y="285" />
+        <ns5:waypoint x="623" y="860" />
+        <ns5:waypoint x="770" y="860" />
+        <ns3:BPMNLabel>
+          <ns4:Bounds x="630" y="845" width="64" height="14" />
+        </ns3:BPMNLabel>
+      </ns3:BPMNEdge>
+      <ns3:BPMNEdge id="Flow_gw_to_nsk_di" bpmnElement="Flow_gw_to_nsk">
+        <ns5:waypoint x="623" y="285" />
+        <ns5:waypoint x="623" y="960" />
+        <ns5:waypoint x="770" y="960" />
+        <ns3:BPMNLabel>
+          <ns4:Bounds x="629" y="932" width="67" height="27" />
+        </ns3:BPMNLabel>
+      </ns3:BPMNEdge>
+      <ns3:BPMNEdge id="Flow_gw_to_kovrov_plan_di" bpmnElement="Flow_gw_to_kovrov_plan">
+        <ns5:waypoint x="623" y="285" />
+        <ns5:waypoint x="623" y="1060" />
+        <ns5:waypoint x="770" y="1060" />
+        <ns3:BPMNLabel>
+          <ns4:Bounds x="627" y="1044" width="68" height="14" />
+        </ns3:BPMNLabel>
+      </ns3:BPMNEdge>
+      <ns3:BPMNEdge id="Flow_gw_to_nsk_plan_di" bpmnElement="Flow_gw_to_nsk_plan">
+        <ns5:waypoint x="623" y="285" />
+        <ns5:waypoint x="623" y="1160" />
+        <ns5:waypoint x="770" y="1160" />
+        <ns3:BPMNLabel>
+          <ns4:Bounds x="629" y="1141" width="78" height="14" />
+        </ns3:BPMNLabel>
+      </ns3:BPMNEdge>
+      <ns3:BPMNEdge id="Flow_gw_to_delivery_di" bpmnElement="Flow_gw_to_delivery">
+        <ns5:waypoint x="623" y="285" />
+        <ns5:waypoint x="623" y="1260" />
+        <ns5:waypoint x="770" y="1260" />
+        <ns3:BPMNLabel>
+          <ns4:Bounds x="630" y="1243" width="48" height="14" />
+        </ns3:BPMNLabel>
+      </ns3:BPMNEdge>
+      <ns3:BPMNEdge id="Flow_gw_to_centralskl_di" bpmnElement="Flow_gw_to_centralskl">
+        <ns5:waypoint x="623" y="285" />
+        <ns5:waypoint x="623" y="1360" />
+        <ns5:waypoint x="770" y="1360" />
+        <ns3:BPMNLabel>
+          <ns4:Bounds x="629" y="1332" width="70" height="27" />
+        </ns3:BPMNLabel>
+      </ns3:BPMNEdge>
+      <ns3:BPMNEdge id="Flow_gw_to_peremeshenie_di" bpmnElement="Flow_gw_to_peremeshenie">
+        <ns5:waypoint x="623" y="285" />
+        <ns5:waypoint x="623" y="1460" />
+        <ns5:waypoint x="770" y="1460" />
+        <ns3:BPMNLabel>
+          <ns4:Bounds x="627" y="1444" width="74" height="14" />
+        </ns3:BPMNLabel>
+      </ns3:BPMNEdge>
+      <ns3:BPMNEdge id="Flow_gw_to_rs_di" bpmnElement="Flow_gw_to_rs">
+        <ns5:waypoint x="623" y="285" />
+        <ns5:waypoint x="623" y="1560" />
+        <ns5:waypoint x="770" y="1560" />
+        <ns3:BPMNLabel>
+          <ns4:Bounds x="634" y="1547" width="16" height="14" />
+        </ns3:BPMNLabel>
+      </ns3:BPMNEdge>
+      <ns3:BPMNEdge id="Flow_gw_to_vputi_di" bpmnElement="Flow_gw_to_vputi">
+        <ns5:waypoint x="623" y="285" />
+        <ns5:waypoint x="623" y="1660" />
+        <ns5:waypoint x="770" y="1660" />
+        <ns3:BPMNLabel>
+          <ns4:Bounds x="633" y="1644" width="34" height="14" />
+        </ns3:BPMNLabel>
+      </ns3:BPMNEdge>
+      <ns3:BPMNEdge id="Flow_gw_to_regsklad_di" bpmnElement="Flow_gw_to_regsklad">
+        <ns5:waypoint x="623" y="285" />
+        <ns5:waypoint x="623" y="1760" />
+        <ns5:waypoint x="770" y="1760" />
+        <ns3:BPMNLabel>
+          <ns4:Bounds x="632" y="1753" width="52" height="14" />
+        </ns3:BPMNLabel>
+      </ns3:BPMNEdge>
+      <ns3:BPMNEdge id="Flow_gw_to_tranzit_di" bpmnElement="Flow_gw_to_tranzit">
+        <ns5:waypoint x="623" y="285" />
+        <ns5:waypoint x="623" y="1860" />
+        <ns5:waypoint x="770" y="1860" />
+        <ns3:BPMNLabel>
+          <ns4:Bounds x="632" y="1846" width="41" height="14" />
+        </ns3:BPMNLabel>
+      </ns3:BPMNEdge>
+      <ns3:BPMNEdge id="Flow_gw_to_peremes_natt_di" bpmnElement="Flow_gw_to_peremes_natt">
+        <ns5:waypoint x="623" y="285" />
+        <ns5:waypoint x="623" y="1960" />
+        <ns5:waypoint x="770" y="1960" />
+        <ns3:BPMNLabel>
+          <ns4:Bounds x="632" y="1929" width="89" height="27" />
+        </ns3:BPMNLabel>
+      </ns3:BPMNEdge>
+      <ns3:BPMNEdge id="Flow_gw_to_tochka_di" bpmnElement="Flow_gw_to_tochka">
+        <ns5:waypoint x="623" y="285" />
+        <ns5:waypoint x="623" y="2060" />
+        <ns5:waypoint x="770" y="2060" />
+        <ns3:BPMNLabel>
+          <ns4:Bounds x="626" y="2045" width="77" height="14" />
+        </ns3:BPMNLabel>
+      </ns3:BPMNEdge>
+      <ns3:BPMNEdge id="Flow_gw_to_ready_di" bpmnElement="Flow_gw_to_ready">
+        <ns5:waypoint x="623" y="285" />
+        <ns5:waypoint x="623" y="2160" />
+        <ns5:waypoint x="770" y="2160" />
+        <ns3:BPMNLabel>
+          <ns4:Bounds x="625" y="2146" width="82" height="14" />
+        </ns3:BPMNLabel>
+      </ns3:BPMNEdge>
+      <ns3:BPMNEdge id="Flow_gw_to_smezhnyy_di" bpmnElement="Flow_gw_to_smezhnyy">
+        <ns5:waypoint x="623" y="285" />
+        <ns5:waypoint x="623" y="2260" />
+        <ns5:waypoint x="770" y="2260" />
+        <ns3:BPMNLabel>
+          <ns4:Bounds x="626" y="2243" width="82" height="14" />
+        </ns3:BPMNLabel>
+      </ns3:BPMNEdge>
+      <ns3:BPMNEdge id="Flow_gw_to_otgruzka_di" bpmnElement="Flow_gw_to_otgruzka">
+        <ns5:waypoint x="623" y="285" />
+        <ns5:waypoint x="623" y="2360" />
+        <ns5:waypoint x="770" y="2360" />
+        <ns3:BPMNLabel>
+          <ns4:Bounds x="627" y="2326" width="57" height="27" />
+        </ns3:BPMNLabel>
+      </ns3:BPMNEdge>
+      <ns3:BPMNEdge id="Flow_gw_to_vypolnen_di" bpmnElement="Flow_gw_to_vypolnen">
+        <ns5:waypoint x="623" y="285" />
+        <ns5:waypoint x="623" y="2460" />
+        <ns5:waypoint x="770" y="2460" />
+        <ns3:BPMNLabel>
+          <ns4:Bounds x="630" y="2443" width="52" height="14" />
+        </ns3:BPMNLabel>
+      </ns3:BPMNEdge>
+      <ns3:BPMNEdge id="Flow_gw_to_otmenen_di" bpmnElement="Flow_gw_to_otmenen">
+        <ns5:waypoint x="623" y="285" />
+        <ns5:waypoint x="623" y="2560" />
+        <ns5:waypoint x="770" y="2560" />
+        <ns3:BPMNLabel>
+          <ns4:Bounds x="633" y="2543" width="46" height="14" />
+        </ns3:BPMNLabel>
+      </ns3:BPMNEdge>
+      <ns3:BPMNEdge id="Flow_gw_to_unknown_di" bpmnElement="Flow_gw_to_unknown">
+        <ns5:waypoint x="623" y="285" />
+        <ns5:waypoint x="623" y="2660" />
+        <ns5:waypoint x="770" y="2660" />
+        <ns3:BPMNLabel>
+          <ns4:Bounds x="630" y="2643" width="68" height="14" />
+        </ns3:BPMNLabel>
+      </ns3:BPMNEdge>
+      <ns3:BPMNEdge id="Flow_oformlyaemy_to_join_di" bpmnElement="Flow_oformlyaemy_to_join">
+        <ns5:waypoint x="870" y="260" />
+        <ns5:waypoint x="980" y="260" />
+      </ns3:BPMNEdge>
+      <ns3:BPMNEdge id="Flow_ispolnyaemy_to_join_di" bpmnElement="Flow_ispolnyaemy_to_join">
+        <ns5:waypoint x="870" y="360" />
+        <ns5:waypoint x="940" y="360" />
+        <ns5:waypoint x="940" y="260" />
+        <ns5:waypoint x="980" y="260" />
+      </ns3:BPMNEdge>
+      <ns3:BPMNEdge id="Flow_vnimanie_to_join_di" bpmnElement="Flow_vnimanie_to_join">
+        <ns5:waypoint x="870" y="460" />
+        <ns5:waypoint x="940" y="460" />
+        <ns5:waypoint x="940" y="260" />
+        <ns5:waypoint x="980" y="260" />
+      </ns3:BPMNEdge>
+      <ns3:BPMNEdge id="Flow_netkani_to_join_di" bpmnElement="Flow_netkani_to_join">
+        <ns5:waypoint x="870" y="560" />
+        <ns5:waypoint x="940" y="560" />
+        <ns5:waypoint x="940" y="260" />
+        <ns5:waypoint x="980" y="260" />
+      </ns3:BPMNEdge>
+      <ns3:BPMNEdge id="Flow_ozhidanie_to_join_di" bpmnElement="Flow_ozhidanie_to_join">
+        <ns5:waypoint x="870" y="660" />
+        <ns5:waypoint x="940" y="660" />
+        <ns5:waypoint x="940" y="260" />
+        <ns5:waypoint x="980" y="260" />
+      </ns3:BPMNEdge>
+      <ns3:BPMNEdge id="Flow_zhduoplatu_to_join_di" bpmnElement="Flow_zhduoplatu_to_join">
+        <ns5:waypoint x="870" y="760" />
+        <ns5:waypoint x="940" y="760" />
+        <ns5:waypoint x="940" y="260" />
+        <ns5:waypoint x="980" y="260" />
+      </ns3:BPMNEdge>
+      <ns3:BPMNEdge id="Flow_kovrov_to_join_di" bpmnElement="Flow_kovrov_to_join">
+        <ns5:waypoint x="870" y="860" />
+        <ns5:waypoint x="940" y="860" />
+        <ns5:waypoint x="940" y="260" />
+        <ns5:waypoint x="980" y="260" />
+      </ns3:BPMNEdge>
+      <ns3:BPMNEdge id="Flow_nsk_to_join_di" bpmnElement="Flow_nsk_to_join">
+        <ns5:waypoint x="870" y="960" />
+        <ns5:waypoint x="940" y="960" />
+        <ns5:waypoint x="940" y="260" />
+        <ns5:waypoint x="980" y="260" />
+      </ns3:BPMNEdge>
+      <ns3:BPMNEdge id="Flow_kovrov_plan_to_join_di" bpmnElement="Flow_kovrov_plan_to_join">
+        <ns5:waypoint x="870" y="1060" />
+        <ns5:waypoint x="940" y="1060" />
+        <ns5:waypoint x="940" y="260" />
+        <ns5:waypoint x="980" y="260" />
+      </ns3:BPMNEdge>
+      <ns3:BPMNEdge id="Flow_nsk_plan_to_join_di" bpmnElement="Flow_nsk_plan_to_join">
+        <ns5:waypoint x="870" y="1160" />
+        <ns5:waypoint x="940" y="1160" />
+        <ns5:waypoint x="940" y="260" />
+        <ns5:waypoint x="980" y="260" />
+      </ns3:BPMNEdge>
+      <ns3:BPMNEdge id="Flow_delivery_to_join_di" bpmnElement="Flow_delivery_to_join">
+        <ns5:waypoint x="870" y="1260" />
+        <ns5:waypoint x="940" y="1260" />
+        <ns5:waypoint x="940" y="260" />
+        <ns5:waypoint x="980" y="260" />
+      </ns3:BPMNEdge>
+      <ns3:BPMNEdge id="Flow_centralskl_to_join_di" bpmnElement="Flow_centralskl_to_join">
+        <ns5:waypoint x="870" y="1360" />
+        <ns5:waypoint x="940" y="1360" />
+        <ns5:waypoint x="940" y="260" />
+        <ns5:waypoint x="980" y="260" />
+      </ns3:BPMNEdge>
+      <ns3:BPMNEdge id="Flow_peremeshenie_to_join_di" bpmnElement="Flow_peremeshenie_to_join">
+        <ns5:waypoint x="870" y="1460" />
+        <ns5:waypoint x="940" y="1460" />
+        <ns5:waypoint x="940" y="260" />
+        <ns5:waypoint x="980" y="260" />
+      </ns3:BPMNEdge>
+      <ns3:BPMNEdge id="Flow_rs_to_join_di" bpmnElement="Flow_rs_to_join">
+        <ns5:waypoint x="870" y="1560" />
+        <ns5:waypoint x="940" y="1560" />
+        <ns5:waypoint x="940" y="260" />
+        <ns5:waypoint x="980" y="260" />
+      </ns3:BPMNEdge>
+      <ns3:BPMNEdge id="Flow_vputi_to_join_di" bpmnElement="Flow_vputi_to_join">
+        <ns5:waypoint x="870" y="1660" />
+        <ns5:waypoint x="940" y="1660" />
+        <ns5:waypoint x="940" y="260" />
+        <ns5:waypoint x="980" y="260" />
+      </ns3:BPMNEdge>
+      <ns3:BPMNEdge id="Flow_regsklad_to_join_di" bpmnElement="Flow_regsklad_to_join">
+        <ns5:waypoint x="870" y="1760" />
+        <ns5:waypoint x="940" y="1760" />
+        <ns5:waypoint x="940" y="260" />
+        <ns5:waypoint x="980" y="260" />
+      </ns3:BPMNEdge>
+      <ns3:BPMNEdge id="Flow_tranzit_to_join_di" bpmnElement="Flow_tranzit_to_join">
+        <ns5:waypoint x="870" y="1860" />
+        <ns5:waypoint x="940" y="1860" />
+        <ns5:waypoint x="940" y="260" />
+        <ns5:waypoint x="980" y="260" />
+      </ns3:BPMNEdge>
+      <ns3:BPMNEdge id="Flow_peremes_natt_to_join_di" bpmnElement="Flow_peremes_natt_to_join">
+        <ns5:waypoint x="870" y="1960" />
+        <ns5:waypoint x="940" y="1960" />
+        <ns5:waypoint x="940" y="260" />
+        <ns5:waypoint x="980" y="260" />
+      </ns3:BPMNEdge>
+      <ns3:BPMNEdge id="Flow_tochka_to_join_di" bpmnElement="Flow_tochka_to_join">
+        <ns5:waypoint x="870" y="2060" />
+        <ns5:waypoint x="940" y="2060" />
+        <ns5:waypoint x="940" y="260" />
+        <ns5:waypoint x="980" y="260" />
+      </ns3:BPMNEdge>
+      <ns3:BPMNEdge id="Flow_ready_to_join_di" bpmnElement="Flow_ready_to_join">
+        <ns5:waypoint x="870" y="2160" />
+        <ns5:waypoint x="940" y="2160" />
+        <ns5:waypoint x="940" y="260" />
+        <ns5:waypoint x="980" y="260" />
+      </ns3:BPMNEdge>
+      <ns3:BPMNEdge id="Flow_smezhnyy_to_join_di" bpmnElement="Flow_smezhnyy_to_join">
+        <ns5:waypoint x="870" y="2260" />
+        <ns5:waypoint x="940" y="2260" />
+        <ns5:waypoint x="940" y="260" />
+        <ns5:waypoint x="980" y="260" />
+      </ns3:BPMNEdge>
+      <ns3:BPMNEdge id="Flow_otgruzka_to_join_di" bpmnElement="Flow_otgruzka_to_join">
+        <ns5:waypoint x="870" y="2360" />
+        <ns5:waypoint x="940" y="2360" />
+        <ns5:waypoint x="940" y="260" />
+        <ns5:waypoint x="980" y="260" />
+      </ns3:BPMNEdge>
+      <ns3:BPMNEdge id="Flow_unknown_to_join_di" bpmnElement="Flow_unknown_to_join">
+        <ns5:waypoint x="870" y="2660" />
+        <ns5:waypoint x="940" y="2660" />
+        <ns5:waypoint x="940" y="260" />
+        <ns5:waypoint x="980" y="260" />
+      </ns3:BPMNEdge>
+      <ns3:BPMNEdge id="Flow_vypolnen_to_end_di" bpmnElement="Flow_vypolnen_to_end">
+        <ns5:waypoint x="870" y="2460" />
+        <ns5:waypoint x="892" y="2460" />
+      </ns3:BPMNEdge>
+      <ns3:BPMNEdge id="Flow_otmenen_to_end_di" bpmnElement="Flow_otmenen_to_end">
+        <ns5:waypoint x="870" y="2560" />
+        <ns5:waypoint x="892" y="2560" />
+      </ns3:BPMNEdge>
+      <ns3:BPMNEdge id="Flow_join_to_ebg_di" bpmnElement="Flow_join_to_ebg">
+        <ns5:waypoint x="1030" y="260" />
+        <ns5:waypoint x="1120" y="260" />
+        <ns3:BPMNLabel>
+          <ns4:Bounds x="1034" y="241" width="82" height="14" />
+        </ns3:BPMNLabel>
+      </ns3:BPMNEdge>
+      <ns3:BPMNEdge id="Flow_ebg_to_catch_di" bpmnElement="Flow_ebg_to_catch">
+        <ns5:waypoint x="1145" y="235" />
+        <ns5:waypoint x="1145" y="168" />
+        <ns3:BPMNLabel>
+          <ns4:Bounds x="1069" y="196" width="70" height="14" />
+        </ns3:BPMNLabel>
+      </ns3:BPMNEdge>
+      <ns3:BPMNEdge id="Flow_ebg_to_timer_di" bpmnElement="Flow_ebg_to_timer">
+        <ns5:waypoint x="1145" y="285" />
+        <ns5:waypoint x="1145" y="338" />
+        <ns5:waypoint x="1240" y="338" />
+        <ns3:BPMNLabel>
+          <ns4:Bounds x="1151" y="308" width="86" height="14" />
+        </ns3:BPMNLabel>
+      </ns3:BPMNEdge>
+      <ns3:BPMNEdge id="Flow_timer_to_end_di" bpmnElement="Flow_timer_to_end">
+        <ns5:waypoint x="1276" y="338" />
+        <ns5:waypoint x="1400" y="338" />
+      </ns3:BPMNEdge>
+      <ns3:BPMNEdge id="Flow_catch_to_gw_di" bpmnElement="Flow_catch_to_gw">
+        <ns5:waypoint x="1127" y="150" />
+        <ns5:waypoint x="473" y="150" />
+        <ns5:waypoint x="473" y="235" />
+        <ns3:BPMNLabel>
+          <ns4:Bounds x="674" y="135" width="87" height="14" />
+        </ns3:BPMNLabel>
+      </ns3:BPMNEdge>
+    </ns3:BPMNPlane>
+  </ns3:BPMNDiagram>
+</ns0:definitions>

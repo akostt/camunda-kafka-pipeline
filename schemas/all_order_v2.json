@@ -1,0 +1,1305 @@
+{
+  "topic": "all_orders",
+  "schema": {
+    "type": "record",
+    "name": "OrderMessage",
+    "namespace": "Askona.Kafka.DTO.ALL.Order",
+    "fields":
+    [
+        {
+            "name": "metadata",
+            "type":
+            {
+                "type": "record",
+                "name": "MessageInfo",
+                "namespace": "Askona.Kafka.DTO.Common",
+                "fields":
+                [
+                    {
+                        "name": "integrationTimestamp",
+                        "type": "long",
+                        "doc": "Временная метка интеграции"
+                    },
+                    {
+                        "name": "correlationId",
+                        "type":
+                        [
+                            {
+                                "type": "string",
+                                "logicalType": "uuid"
+                            },
+                            "null"
+                        ],
+                        "doc": "Идентификатор для отслеживания уникальной цепочки сообщений"
+                    }
+                ]
+            }
+        },
+        {
+            "name": "messageObject",
+            "type":
+            {
+                "type": "record",
+                "name": "Order",
+                "doc": "Заказ",
+                "fields":
+                [
+                    {
+                        "name": "id",
+                        "type":
+                        {
+                            "type": "string",
+                            "logicalType": "uuid"
+                        },
+                        "doc": "GUID заказа"
+                    },
+                    {
+                        "name": "number",
+                        "type": "string",
+                        "doc": "Номер заказа"
+                    },
+                    {
+                        "name": "createdAt",
+                        "type":
+                        {
+                            "type": "long",
+                            "logicalType": "timestamp-millis"
+                        },
+                        "doc": "Дата и время создания заказа (UTC)"
+                    },
+                    {
+                        "name": "shopId",
+                        "type": "string",
+                        "doc": "NRec центра ответственности"
+                    },
+                    {
+                        "name": "managerId",
+                        "type":
+                        {
+                            "type": "string",
+                            "logicalType": "uuid"
+                        },
+                        "doc": "GUID менеджера"
+                    },
+                    {
+                        "name": "manager2Id",
+                        "type":
+                        [
+                            "null",
+                            {
+                                "type": "string",
+                                "logicalType": "uuid"
+                            }
+                        ],
+                        "doc": "GUID второго менеджера",
+                        "default": null
+                    },
+                    {
+                        "name": "paymentTypeId",
+                        "type": "string",
+                        "doc": "NRec формы расчёта"
+                    },
+                    {
+                        "name": "comment",
+                        "type": "string",
+                        "doc": "Примечание к заказу"
+                    },
+                    {
+                        "name": "stateName",
+                        "type":
+                        {
+                            "type": "enum",
+                            "name": "StateName",
+                            "symbols":
+                            [
+                                "Updated",
+                                "Deleted",
+                                "PendingProcessing",
+                                "ProcessingFailed"
+                            ]
+                        },
+                        "doc": "Название состояния"
+                    },
+                    {
+                        "name": "organization",
+                        "type":
+                        {
+                            "type": "record",
+                            "name": "OrderOrganization",
+                            "doc": "Организации заказа",
+                            "fields":
+                            [
+                                {
+                                    "name": "clientId",
+                                    "type":
+                                    {
+                                        "type": "string",
+                                        "logicalType": "uuid"
+                                    },
+                                    "doc": "GUID клиента"
+                                },
+                                {
+                                    "name": "shipperId",
+                                    "type":
+                                    [
+                                        "null",
+                                        {
+                                            "type": "string",
+                                            "logicalType": "uuid"
+                                        }
+                                    ],
+                                    "doc": "GUID грузоотправителя",
+                                    "default": null
+                                },
+                                {
+                                    "name": "agentId",
+                                    "type":
+                                    [
+                                        "null",
+                                        {
+                                            "type": "string",
+                                            "logicalType": "uuid"
+                                        }
+                                    ],
+                                    "doc": "GUID агента-дизайнера",
+                                    "default": null
+                                },
+                                {
+                                    "name": "receiverId",
+                                    "type":
+                                    [
+                                        "null",
+                                        {
+                                            "type": "string",
+                                            "logicalType": "uuid"
+                                        }
+                                    ],
+                                    "doc": "GUID получателя",
+                                    "default": null
+                                }
+                            ]
+                        }
+                    },
+                    {
+                        "name": "sourceId",
+                        "type":
+                        [
+                            "null",
+                            "string"
+                        ],
+                        "doc": "NRec источника заказа",
+                        "default": null
+                    },
+                    {
+                        "name": "categoryId",
+                        "type":
+                        [
+                            "null",
+                            "string"
+                        ],
+                        "doc": "NRec категории заказа",
+                        "default": null
+                    },
+                    {
+                        "name": "contractId",
+                        "type":
+                        [
+                            "null",
+                            "string"
+                        ],
+                        "doc": "NRec договора",
+                        "default": null
+                    },
+                    {
+                        "name": "isTaxIncluded",
+                        "type":
+                        [
+                            "null",
+                            "boolean"
+                        ],
+                        "doc": "Признак вхождения налогов",
+                        "default": null
+                    },
+                    {
+                        "name": "currencyCode",
+                        "type":
+                        [
+                            "null",
+                            "string"
+                        ],
+                        "doc": "Код валюты (ISO 4217)",
+                        "default": null
+                    },
+                    {
+                        "name": "appointmentId",
+                        "type":
+                        [
+                            "null",
+                            "string"
+                        ],
+                        "doc": "NRec назначения",
+                        "default": null
+                    },
+                    {
+                        "name": "claimNumber",
+                        "type":
+                        [
+                            "null",
+                            "string"
+                        ],
+                        "doc": "Номер претензии",
+                        "default": null
+                    },
+                    {
+                        "name": "statusId",
+                        "type":
+                        [
+                            "null",
+                            "string"
+                        ],
+                        "doc": "NRec статуса заказа",
+                        "default": null
+                    },
+                    {
+                        "name": "clientStatusId",
+                        "type":
+                        [
+                            "null",
+                            {
+                                "type": "string",
+                                "logicalType": "uuid"
+                            }
+                        ],
+                        "doc": "GUID клиентского статуса заказа",
+                        "default": null
+                    },
+                    {
+                        "name": "filialId",
+                        "type":
+                        [
+                            "null",
+                            "string"
+                        ],
+                        "doc": "NRec филиала заказа",
+                        "default": null
+                    },
+                    {
+                        "name": "descriptorGroupCode",
+                        "type":
+                        [
+                            "null",
+                            "string"
+                        ],
+                        "doc": "Группа дескрипторов",
+                        "default": null
+                    },
+                    {
+                        "name": "additionalPaymentAmount",
+                        "type":
+                        [
+                            "null",
+                            {
+                                "type": "bytes",
+                                "logicalType": "decimal",
+                                "precision": 18,
+                                "scale": 2
+                            }
+                        ],
+                        "doc": "Сумма доплаты для агентов опта",
+                        "default": null
+                    },
+                    {
+                        "name": "order3PLId",
+                        "type":
+                        [
+                            "null",
+                            {
+                                "type": "string",
+                                "logicalType": "uuid"
+                            }
+                        ],
+                        "doc": "GUID связанного заказа физлица (3PL)",
+                        "default": null
+                    },
+                    {
+                        "name": "priceZoneId",
+                        "type":
+                        [
+                            "null",
+                            {
+                                "type": "string",
+                                "logicalType": "uuid"
+                            }
+                        ],
+                        "doc": "GUID ценовой зоны",
+                        "default": null
+                    },
+                    {
+                        "name": "requestedBonusAmount",
+                        "type":
+                        [
+                            "null",
+                            {
+                                "type": "bytes",
+                                "logicalType": "decimal",
+                                "precision": 18,
+                                "scale": 2
+                            }
+                        ],
+                        "doc": "Сумма бонусных баллов запрошенных к списанию",
+                        "default": null
+                    },
+                    {
+                        "name": "planning",
+                        "type":
+                        [
+                            "null",
+                            {
+                                "type": "record",
+                                "name": "OrderPlanning",
+                                "doc": "Планирование заказа",
+                                "fields":
+                                [
+                                    {
+                                        "name": "plannedDate",
+                                        "type":
+                                        [
+                                            "null",
+                                            {
+                                                "type": "int",
+                                                "logicalType": "date"
+                                            }
+                                        ],
+                                        "doc": "Плановая дата",
+                                        "default": null
+                                    },
+                                    {
+                                        "name": "protocolId",
+                                        "type":
+                                        [
+                                            "null",
+                                            {
+                                                "type": "string",
+                                                "logicalType": "uuid"
+                                            }
+                                        ],
+                                        "doc": "GUID протокола расчёта плановой даты",
+                                        "default": null
+                                    },
+                                    {
+                                        "name": "manufactureDate",
+                                        "type":
+                                        [
+                                            "null",
+                                            {
+                                                "type": "int",
+                                                "logicalType": "date"
+                                            }
+                                        ],
+                                        "doc": "Дата производства",
+                                        "default": null
+                                    }
+                                ]
+                            }
+                        ],
+                        "default": null
+                    },
+                    {
+                        "name": "delivery",
+                        "type":
+                        [
+                            "null",
+                            {
+                                "type": "record",
+                                "name": "OrderDelivery",
+                                "doc": "Доставка заказа",
+                                "fields":
+                                [
+                                    {
+                                        "name": "plannedDate",
+                                        "type":
+                                        [
+                                            "null",
+                                            {
+                                                "type": "int",
+                                                "logicalType": "date"
+                                            }
+                                        ],
+                                        "doc": "Плановая дата доставки",
+                                        "default": null
+                                    },
+                                    {
+                                        "name": "plannedTimeBegin",
+                                        "type":
+                                        [
+                                            "null",
+                                            {
+                                                "type": "int",
+                                                "logicalType": "time-millis"
+                                            }
+                                        ],
+                                        "doc": "Плановое время начала доставки",
+                                        "default": null
+                                    },
+                                    {
+                                        "name": "plannedTimeEnd",
+                                        "type":
+                                        [
+                                            "null",
+                                            {
+                                                "type": "int",
+                                                "logicalType": "time-millis"
+                                            }
+                                        ],
+                                        "doc": "Плановое время окончания доставки",
+                                        "default": null
+                                    },
+                                    {
+                                        "name": "comment",
+                                        "type":
+                                        [
+                                            "null",
+                                            "string"
+                                        ],
+                                        "doc": "Примечание к доставке",
+                                        "default": null
+                                    },
+                                    {
+                                        "name": "pvzCode",
+                                        "type":
+                                        [
+                                            "null",
+                                            "string"
+                                        ],
+                                        "doc": "Код ПВЗ",
+                                        "default": null
+                                    },
+                                    {
+                                        "name": "courierTrackNumber",
+                                        "type":
+                                        [
+                                            "null",
+                                            "string"
+                                        ],
+                                        "doc": "Трек-номер курьерской службы",
+                                        "default": null
+                                    },
+                                    {
+                                        "name": "courierTrackLink",
+                                        "type":
+                                        [
+                                            "null",
+                                            "string"
+                                        ],
+                                        "doc": "Ссылка на отслеживание курьерской доставки",
+                                        "default": null
+                                    },
+                                    {
+                                        "name": "courierDocumentLink",
+                                        "type":
+                                        [
+                                            "null",
+                                            "string"
+                                        ],
+                                        "doc": "Ссылка на документ курьерской службы",
+                                        "default": null
+                                    },
+                                    {
+                                        "name": "cityId",
+                                        "type":
+                                        [
+                                            "null",
+                                            "string"
+                                        ],
+                                        "doc": "NRec города доставки",
+                                        "default": null
+                                    },
+                                    {
+                                        "name": "landingLink",
+                                        "type":
+                                        [
+                                            "null",
+                                            "string"
+                                        ],
+                                        "doc": "Ссылка на лендинг самопланирования",
+                                        "default": null
+                                    },
+                                    {
+                                        "name": "pickupDate",
+                                        "type":
+                                        [
+                                            "null",
+                                            {
+                                                "type": "int",
+                                                "logicalType": "date"
+                                            }
+                                        ],
+                                        "doc": "Дата самовывоза",
+                                        "default": null
+                                    },
+                                    {
+                                        "name": "assemblyDate",
+                                        "type":
+                                        [
+                                            "null",
+                                            {
+                                                "type": "int",
+                                                "logicalType": "date"
+                                            }
+                                        ],
+                                        "doc": "Дата сборки заказа",
+                                        "default": null
+                                    },
+                                    {
+                                        "name": "callDate",
+                                        "type":
+                                        [
+                                            "null",
+                                            {
+                                                "type": "int",
+                                                "logicalType": "date"
+                                            }
+                                        ],
+                                        "doc": "Дата звонка клиенту",
+                                        "default": null
+                                    },
+                                    {
+                                        "name": "postIndex",
+                                        "type":
+                                        [
+                                            "null",
+                                            "string"
+                                        ],
+                                        "doc": "Почтовый идентификатор",
+                                        "default": null
+                                    }
+                                ]
+                            }
+                        ],
+                        "default": null
+                    },
+                    {
+                        "name": "specification",
+                        "type":
+                        {
+                            "type": "array",
+                            "items":
+                            {
+                                "type": "record",
+                                "name": "OrderSpecification",
+                                "doc": "Спецификация заказа",
+                                "fields":
+                                [
+                                    {
+                                        "name": "id",
+                                        "type":
+                                        {
+                                            "type": "string",
+                                            "logicalType": "uuid"
+                                        },
+                                        "doc": "GUID строки заказа"
+                                    },
+                                    {
+                                        "name": "itemNumber",
+                                        "type": "int",
+                                        "doc": "Порядковый номер строки"
+                                    },
+                                    {
+                                        "name": "nomenclatureId",
+                                        "type":
+                                        {
+                                            "type": "string",
+                                            "logicalType": "uuid"
+                                        },
+                                        "doc": "GUID номенклатуры или услуги"
+                                    },
+                                    {
+                                        "name": "isService",
+                                        "type": "boolean",
+                                        "doc": "Признак услуги: true — услуга, false — товар"
+                                    },
+                                    {
+                                        "name": "priceListId",
+                                        "type": "string",
+                                        "doc": "NRec прайс-листа"
+                                    },
+                                    {
+                                        "name": "quantity",
+                                        "type":
+                                        {
+                                            "type": "bytes",
+                                            "logicalType": "decimal",
+                                            "precision": 20,
+                                            "scale": 4
+                                        },
+                                        "doc": "Количество"
+                                    },
+                                    {
+                                        "name": "totalAmount",
+                                        "type":
+                                        {
+                                            "type": "bytes",
+                                            "logicalType": "decimal",
+                                            "precision": 18,
+                                            "scale": 2
+                                        },
+                                        "doc": "Сумма строки с учётом скидок"
+                                    },
+                                    {
+                                        "name": "price",
+                                        "type":
+                                        {
+                                            "type": "bytes",
+                                            "logicalType": "decimal",
+                                            "precision": 18,
+                                            "scale": 2
+                                        },
+                                        "doc": "Цена"
+                                    },
+                                    {
+                                        "name": "taxAmount",
+                                        "type":
+                                        [
+                                            "null",
+                                            {
+                                                "type": "bytes",
+                                                "logicalType": "decimal",
+                                                "precision": 18,
+                                                "scale": 2
+                                            }
+                                        ],
+                                        "doc": "Сумма налогов",
+                                        "default": null
+                                    },
+                                    {
+                                        "name": "linkedSpecId",
+                                        "type":
+                                        [
+                                            "null",
+                                            {
+                                                "type": "string",
+                                                "logicalType": "uuid"
+                                            }
+                                        ],
+                                        "doc": "GUID связанной строки заказа",
+                                        "default": null
+                                    },
+                                    {
+                                        "name": "subdivisionId",
+                                        "type":
+                                        [
+                                            "null",
+                                            "string"
+                                        ],
+                                        "doc": "NRec склада отгрузки",
+                                        "default": null
+                                    },
+                                    {
+                                        "name": "rejectionReasonId",
+                                        "type":
+                                        [
+                                            "null",
+                                            "string"
+                                        ],
+                                        "doc": "NRec причины отказа",
+                                        "default": null
+                                    },
+                                    {
+                                        "name": "planning",
+                                        "type":
+                                        [
+                                            "null",
+                                            {
+                                                "type": "record",
+                                                "name": "OrderSpecPlanning",
+                                                "doc": "Планирование спецификации заказа",
+                                                "fields":
+                                                [
+                                                    {
+                                                        "name": "plannedDate",
+                                                        "type":
+                                                        [
+                                                            "null",
+                                                            {
+                                                                "type": "int",
+                                                                "logicalType": "date"
+                                                            }
+                                                        ],
+                                                        "doc": "Плановая дата",
+                                                        "default": null
+                                                    },
+                                                    {
+                                                        "name": "plannedSupplyDays",
+                                                        "type":
+                                                        [
+                                                            "null",
+                                                            "int"
+                                                        ],
+                                                        "doc": "Плановый срок доставки в рабочих днях",
+                                                        "default": null
+                                                    },
+                                                    {
+                                                        "name": "manufactureDatePlan",
+                                                        "type":
+                                                        [
+                                                            "null",
+                                                            {
+                                                                "type": "int",
+                                                                "logicalType": "date"
+                                                            }
+                                                        ],
+                                                        "doc": "Плановая дата производства",
+                                                        "default": null
+                                                    },
+                                                    {
+                                                        "name": "manufactureDateFact",
+                                                        "type":
+                                                        [
+                                                            "null",
+                                                            {
+                                                                "type": "int",
+                                                                "logicalType": "date"
+                                                            }
+                                                        ],
+                                                        "doc": "Фактическая дата производства",
+                                                        "default": null
+                                                    },
+                                                    {
+                                                        "name": "purchaseDate",
+                                                        "type":
+                                                        [
+                                                            "null",
+                                                            {
+                                                                "type": "int",
+                                                                "logicalType": "date"
+                                                            }
+                                                        ],
+                                                        "doc": "Дата прихода закупной продукции",
+                                                        "default": null
+                                                    }
+                                                ]
+                                            }
+                                        ],
+                                        "default": null
+                                    },
+                                    {
+                                        "name": "delivery",
+                                        "type":
+                                        [
+                                            "null",
+                                            {
+                                                "type": "record",
+                                                "name": "OrderSpecDelivery",
+                                                "doc": "Доставка спецификации заказа",
+                                                "fields":
+                                                [
+                                                    {
+                                                        "name": "methodId",
+                                                        "type":
+                                                        [
+                                                            "null",
+                                                            "string"
+                                                        ],
+                                                        "doc": "NRec способа доставки",
+                                                        "default": null
+                                                    },
+                                                    {
+                                                        "name": "plannedDate",
+                                                        "type":
+                                                        [
+                                                            "null",
+                                                            {
+                                                                "type": "int",
+                                                                "logicalType": "date"
+                                                            }
+                                                        ],
+                                                        "doc": "Плановая дата доставки",
+                                                        "default": null
+                                                    },
+                                                    {
+                                                        "name": "plannedTimeBegin",
+                                                        "type":
+                                                        [
+                                                            "null",
+                                                            {
+                                                                "type": "int",
+                                                                "logicalType": "time-millis"
+                                                            }
+                                                        ],
+                                                        "doc": "Плановое время начала доставки",
+                                                        "default": null
+                                                    },
+                                                    {
+                                                        "name": "plannedTimeEnd",
+                                                        "type":
+                                                        [
+                                                            "null",
+                                                            {
+                                                                "type": "int",
+                                                                "logicalType": "time-millis"
+                                                            }
+                                                        ],
+                                                        "doc": "Плановое время окончания доставки",
+                                                        "default": null
+                                                    },
+                                                    {
+                                                        "name": "temporaryIntervalId",
+                                                        "type":
+                                                        [
+                                                            "null",
+                                                            "string"
+                                                        ],
+                                                        "doc": "Id предварительного интервала собственной доставки",
+                                                        "default": null
+                                                    },
+                                                    {
+                                                        "name": "temporaryRejectionReason",
+                                                        "type":
+                                                        [
+                                                            "null",
+                                                            "string"
+                                                        ],
+                                                        "doc": "Причина снятия предварительного интервала доставки",
+                                                        "default": null
+                                                    },
+                                                    {
+                                                        "name": "intervalId",
+                                                        "type":
+                                                        [
+                                                            "null",
+                                                            "string"
+                                                        ],
+                                                        "doc": "Id основного интервала собственной доставки",
+                                                        "default": null
+                                                    }
+                                                ]
+                                            }
+                                        ],
+                                        "default": null
+                                    },
+                                    {
+                                        "name": "skuId",
+                                        "type":
+                                        [
+                                            "null",
+                                            {
+                                                "type": "string",
+                                                "logicalType": "uuid"
+                                            }
+                                        ],
+                                        "doc": "GUID SKU",
+                                        "default": null
+                                    },
+                                    {
+                                        "name": "orderSpec3PLId",
+                                        "type":
+                                        [
+                                            "null",
+                                            {
+                                                "type": "string",
+                                                "logicalType": "uuid"
+                                            }
+                                        ],
+                                        "doc": "GUID связанной строки заказа физлица (3PL)",
+                                        "default": null
+                                    },
+                                    {
+                                        "name": "statusId",
+                                        "type":
+                                        [
+                                            "null",
+                                            "string"
+                                        ],
+                                        "doc": "NRec статуса строки",
+                                        "default": null
+                                    },
+                                    {
+                                        "name": "clientStatusId",
+                                        "type":
+                                        [
+                                            "null",
+                                            {
+                                                "type": "string",
+                                                "logicalType": "uuid"
+                                            }
+                                        ],
+                                        "doc": "GUID клиентского статуса строки",
+                                        "default": null
+                                    },
+                                    {
+                                        "name": "giftCertificateNumber",
+                                        "type":
+                                        [
+                                            "null",
+                                            "string"
+                                        ],
+                                        "doc": "Номер подарочного сертификата",
+                                        "default": null
+                                    },
+                                    {
+                                        "name": "isAvailableOnCredit",
+                                        "type":
+                                        [
+                                            "null",
+                                            "boolean"
+                                        ],
+                                        "doc": "Признак доступности товара в кредит",
+                                        "default": null
+                                    },
+                                    {
+                                        "name": "promotion",
+                                        "type":
+                                        {
+                                            "type": "array",
+                                            "items":
+                                            {
+                                                "type": "record",
+                                                "name": "OrderSpecPromotion",
+                                                "doc": "Акции по строке заказа",
+                                                "fields":
+                                                [
+                                                    {
+                                                        "name": "id",
+                                                        "type": "string",
+                                                        "doc": "Id строки акции"
+                                                    },
+                                                    {
+                                                        "name": "discountAmount",
+                                                        "type":
+                                                        {
+                                                            "type": "bytes",
+                                                            "logicalType": "decimal",
+                                                            "precision": 18,
+                                                            "scale": 2
+                                                        },
+                                                        "doc": "Сумма скидки по акции"
+                                                    },
+                                                    {
+                                                        "name": "type",
+                                                        "type":
+                                                        [
+                                                            "null",
+                                                            "string"
+                                                        ],
+                                                        "doc": "Тип применённой акции",
+                                                        "default": null
+                                                    },
+                                                    {
+                                                        "name": "promoSource",
+                                                        "type":
+                                                        [
+                                                            "null",
+                                                            "string"
+                                                        ],
+                                                        "doc": "Источник акции",
+                                                        "default": null
+                                                    }
+                                                ]
+                                            }
+                                        },
+                                        "default": []
+                                    },
+                                    {
+                                        "name": "reserve",
+                                        "type":
+                                        {
+                                            "type": "array",
+                                            "items":
+                                            {
+                                                "type": "record",
+                                                "name": "OrderSpecReserve",
+                                                "doc": "Резерв по строке заказа",
+                                                "fields":
+                                                [
+                                                    {
+                                                        "name": "MOLId",
+                                                        "type": "string",
+                                                        "doc": "NRec МОЛ"
+                                                    },
+                                                    {
+                                                        "name": "quantity",
+                                                        "type":
+                                                        {
+                                                            "type": "bytes",
+                                                            "logicalType": "decimal",
+                                                            "precision": 18,
+                                                            "scale": 2
+                                                        },
+                                                        "doc": "Количество"
+                                                    }
+                                                ]
+                                            }
+                                        },
+                                        "default": []
+                                    }
+                                ]
+                            }
+                        },
+                        "default": []
+                    },
+                    {
+                        "name": "address",
+                        "type":
+                        [
+                            "null",
+                            {
+                                "type": "record",
+                                "name": "OrderAddress",
+                                "doc": "Адрес доставки",
+                                "fields":
+                                [
+                                    {
+                                        "name": "name",
+                                        "type":
+                                        [
+                                            "null",
+                                            "string"
+                                        ],
+                                        "doc": "Наименование адреса",
+                                        "default": null
+                                    },
+                                    {
+                                        "name": "streetKLADR",
+                                        "type": "string",
+                                        "doc": "Код улицы по КЛАДР"
+                                    },
+                                    {
+                                        "name": "houseNumber",
+                                        "type":
+                                        [
+                                            "null",
+                                            "string"
+                                        ],
+                                        "doc": "Номер дома",
+                                        "default": null
+                                    },
+                                    {
+                                        "name": "blockType",
+                                        "type":
+                                        [
+                                            "null",
+                                            "string"
+                                        ],
+                                        "doc": "Тип блока: Корпус, Строение, Владение, Другое",
+                                        "default": null
+                                    },
+                                    {
+                                        "name": "blockNumber",
+                                        "type":
+                                        [
+                                            "null",
+                                            "string"
+                                        ],
+                                        "doc": "Номер блока (корпуса, строения и т.д.)",
+                                        "default": null
+                                    },
+                                    {
+                                        "name": "apartmentType",
+                                        "type":
+                                        [
+                                            "null",
+                                            "string"
+                                        ],
+                                        "doc": "Тип помещения: Квартира, Офис, Помещение, Другое",
+                                        "default": null
+                                    },
+                                    {
+                                        "name": "apartmentNumber",
+                                        "type":
+                                        [
+                                            "null",
+                                            "string"
+                                        ],
+                                        "doc": "Номер квартиры или офиса",
+                                        "default": null
+                                    },
+                                    {
+                                        "name": "postalCode",
+                                        "type":
+                                        [
+                                            "null",
+                                            "string"
+                                        ],
+                                        "doc": "Почтовый индекс",
+                                        "default": null
+                                    },
+                                    {
+                                        "name": "latitude",
+                                        "type":
+                                        [
+                                            "null",
+                                            {
+                                                "type": "bytes",
+                                                "logicalType": "decimal",
+                                                "precision": 10,
+                                                "scale": 7
+                                            }
+                                        ],
+                                        "doc": "Широта",
+                                        "default": null
+                                    },
+                                    {
+                                        "name": "longitude",
+                                        "type":
+                                        [
+                                            "null",
+                                            {
+                                                "type": "bytes",
+                                                "logicalType": "decimal",
+                                                "precision": 10,
+                                                "scale": 7
+                                            }
+                                        ],
+                                        "doc": "Долгота",
+                                        "default": null
+                                    },
+                                    {
+                                        "name": "floorNumber",
+                                        "type":
+                                        [
+                                            "null",
+                                            "int"
+                                        ],
+                                        "doc": "Номер этажа",
+                                        "default": null
+                                    },
+                                    {
+                                        "name": "hardlinks",
+                                        "type":
+                                        {
+                                            "type": "array",
+                                            "items": "string"
+                                        },
+                                        "doc": "Хардлинки",
+                                        "default": []
+                                    }
+                                ]
+                            }
+                        ],
+                        "default": null
+                    },
+                    {
+                        "name": "coupon",
+                        "type":
+                        {
+                            "type": "array",
+                            "items":
+                            {
+                                "type": "record",
+                                "name": "OrderCoupon",
+                                "fields":
+                                [
+                                    {
+                                        "name": "number",
+                                        "type": "string",
+                                        "doc": "Номер купона"
+                                    }
+                                ]
+                            }
+                        },
+                        "default": []
+                    },
+                    {
+                        "name": "statusHistory",
+                        "type":
+                        {
+                            "type": "array",
+                            "items":
+                            {
+                                "type": "record",
+                                "name": "OrderStatusHistory",
+                                "doc": "История статусов",
+                                "fields":
+                                [
+                                    {
+                                        "name": "id",
+                                        "type": "string",
+                                        "doc": "NRec записи истории статуса"
+                                    },
+                                    {
+                                        "name": "oldStatusId",
+                                        "type": "string",
+                                        "doc": "NRec предыдущего статуса"
+                                    },
+                                    {
+                                        "name": "newStatusId",
+                                        "type": "string",
+                                        "doc": "NRec нового статуса"
+                                    },
+                                    {
+                                        "name": "changeDate",
+                                        "type":
+                                        {
+                                            "type": "long",
+                                            "logicalType": "timestamp-millis"
+                                        },
+                                        "doc": "Дата и время изменения статуса"
+                                    }
+                                ]
+                            }
+                        },
+                        "default": []
+                    },
+                    {
+                        "name": "pdHistory",
+                        "type":
+                        {
+                            "type": "array",
+                            "items":
+                            {
+                                "type": "record",
+                                "name": "OrderPDHistory",
+                                "doc": "История изменения плановой даты",
+                                "fields":
+                                [
+                                    {
+                                        "name": "changeDate",
+                                        "type":
+                                        {
+                                            "type": "long",
+                                            "logicalType": "timestamp-millis"
+                                        },
+                                        "doc": "Дата и время изменения плановой даты"
+                                    },
+                                    {
+                                        "name": "oldPD",
+                                        "type":
+                                        [
+                                            "null",
+                                            {
+                                                "type": "int",
+                                                "logicalType": "date"
+                                            }
+                                        ],
+                                        "doc": "Предыдущая плановая дата",
+                                        "default": null
+                                    },
+                                    {
+                                        "name": "newPD",
+                                        "type":
+                                        [
+                                            "null",
+                                            {
+                                                "type": "int",
+                                                "logicalType": "date"
+                                            }
+                                        ],
+                                        "doc": "Новая плановая дата",
+                                        "default": null
+                                    },
+                                    {
+                                        "name": "reasonId",
+                                        "type": "string",
+                                        "doc": "NRec причины изменения плановой даты"
+                                    }
+                                ]
+                            }
+                        },
+                        "default": []
+                    }
+                ]
+            }
+        }
+    ]
+  }
+}

@@ -1,0 +1,10 @@
+[project]
+name = "zeebe-worker"
+version = "0.1.0"
+description = "Zeebe job worker — читает задачи из Camunda и публикует заказы в Kafka (Avro)"
+requires-python = ">=3.11"
+dependencies = [
+    "aiokafka>=0.11.0",
+    "fastavro>=1.12.0",
+    "pyzeebe>=4.4.0",
+]

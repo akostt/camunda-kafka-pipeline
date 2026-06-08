@@ -1,0 +1,140 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<bpmn:definitions xmlns:bpmn="http://www.omg.org/spec/BPMN/20100524/MODEL" xmlns:bpmndi="http://www.omg.org/spec/BPMN/20100524/DI" xmlns:dc="http://www.omg.org/spec/DD/20100524/DC" xmlns:di="http://www.omg.org/spec/DD/20100524/DI" xmlns:zeebe="http://camunda.org/schema/zeebe/1.0" xmlns:modeler="http://camunda.org/schema/modeler/1.0" id="Definitions_OrderKafka" targetNamespace="http://bpmn.io/schema/bpmn" exporter="Camunda Modeler" exporterVersion="5.47.0" modeler:executionPlatform="Camunda Cloud" modeler:executionPlatformVersion="8.9.0">
+  <bpmn:message id="Message_088k21m" name="019e87d6-cde4-726f-b362-8be58ba9ff4d" zeebe:modelerTemplate="io.camunda.connectors.inbound.KafkaMessageStart.v1" />
+  <bpmn:process id="Process_OrderKafka" name="Обработка заказа из Kafka с подтверждением" isExecutable="true">
+    <bpmn:startEvent id="StartEvent_Kafka" name="Новый заказ&#10;в Kafka" zeebe:modelerTemplate="io.camunda.connectors.inbound.KafkaMessageStart.v1" zeebe:modelerTemplateVersion="7" zeebe:modelerTemplateIcon="data:image/svg+xml;base64,PHN2ZyB3aWR0aD0nMTgnIGhlaWdodD0nMTgnIHZpZXdCb3g9JzAgMCAyNTYgNDE2JyB4bWxucz0naHR0cDovL3d3dy53My5vcmcvMjAwMC9zdmcnIHByZXNlcnZlQXNwZWN0UmF0aW89J3hNaWRZTWlkJz4KICAgIDxwYXRoIGQ9J00yMDEuODE2IDIzMC4yMTZjLTE2LjE4NiAwLTMwLjY5NyA3LjE3MS00MC42MzQgMTguNDYxbC0yNS40NjMtMTguMDI2YzIuNzAzLTcuNDQyIDQuMjU1LTE1LjQzMyA0LjI1NS0yMy43OTcgMC04LjIxOS0xLjQ5OC0xNi4wNzYtNC4xMTItMjMuNDA4bDI1LjQwNi0xNy44MzVjOS45MzYgMTEuMjMzIDI0LjQwOSAxOC4zNjUgNDAuNTQ4IDE4LjM2NSAyOS44NzUgMCA1NC4xODQtMjQuMzA1IDU0LjE4NC01NC4xODQgMC0yOS44NzktMjQuMzA5LTU0LjE4NC01NC4xODQtNTQuMTg0LTI5Ljg3NSAwLTU0LjE4NCAyNC4zMDUtNTQuMTg0IDU0LjE4NCAwIDUuMzQ4LjgwOCAxMC41MDUgMi4yNTggMTUuMzg5bC0yNS40MjMgMTcuODQ0Yy0xMC42Mi0xMy4xNzUtMjUuOTExLTIyLjM3NC00My4zMzMtMjUuMTgydi0zMC42NGMyNC41NDQtNS4xNTUgNDMuMDM3LTI2Ljk2MiA0My4wMzctNTMuMDE5QzEyNC4xNzEgMjQuMzA1IDk5Ljg2MiAwIDY5Ljk4NyAwIDQwLjExMiAwIDE1LjgwMyAyNC4zMDUgMTUuODAzIDU0LjE4NGMwIDI1LjcwOCAxOC4wMTQgNDcuMjQ2IDQyLjA2NyA1Mi43Njl2MzEuMDM4QzI1LjA0NCAxNDMuNzUzIDAgMTcyLjQwMSAwIDIwNi44NTRjMCAzNC42MjEgMjUuMjkyIDYzLjM3NCA1OC4zNTUgNjguOTR2MzIuNzc0Yy0yNC4yOTkgNS4zNDEtNDIuNTUyIDI3LjAxMS00Mi41NTIgNTIuODk0IDAgMjkuODc5IDI0LjMwOSA1NC4xODQgNTQuMTg0IDU0LjE4NCAyOS44NzUgMCA1NC4xODQtMjQuMzA1IDU0LjE4NC01NC4xODQgMC0yNS44ODMtMTguMjUzLTQ3LjU1My00Mi41NTItNTIuODk0di0zMi43NzVhNjkuOTY1IDY5Ljk2NSAwIDAgMCA0Mi42LTI0Ljc3NmwyNS42MzMgMTguMTQzYy0xLjQyMyA0Ljg0LTIuMjIgOS45NDYtMi4yMiAxNS4yNCAwIDI5Ljg3OSAyNC4zMDkgNTQuMTg0IDU0LjE4NCA1NC4xODQgMjkuODc1IDAgNTQuMTg0LTI0LjMwNSA1NC4xODQtNTQuMTg0IDAtMjkuODc5LTI0LjMwOS01NC4xODQtNTQuMTg0LTU0LjE4NHptMC0xMjYuNjk1YzE0LjQ4NyAwIDI2LjI3IDExLjc4OCAyNi4yNyAyNi4yNzFzLTExLjc4MyAyNi4yNy0yNi4yNyAyNi4yNy0yNi4yNy0xMS43ODctMjYuMjctMjYuMjdjMC0xNC40ODMgMTEuNzgzLTI2LjI3MSAyNi4yNy0yNi4yNzF6bS0xNTguMS00OS4zMzdjMC0xNC40ODMgMTEuNzg0LTI2LjI3IDI2LjI3MS0yNi4yN3MyNi4yNyAxMS43ODcgMjYuMjcgMjYuMjdjMCAxNC40ODMtMTEuNzgzIDI2LjI3LTI2LjI3IDI2LjI3cy0yNi4yNzEtMTEuNzg3LTI2LjI3MS0yNi4yN3ptNTIuNTQxIDMwNy4yNzhjMCAxNC40ODMtMTEuNzgzIDI2LjI3LTI2LjI3IDI2LjI3cy0yNi4yNzEtMTEuNzg3LTI2LjI3MS0yNi4yN2MwLTE0LjQ4MyAxMS43ODQtMjYuMjcgMjYuMjcxLTI2LjI3czI2LjI3IDExLjc4NyAyNi4yNyAyNi4yN3ptLTI2LjI3Mi0xMTcuOTdjLTIwLjIwNSAwLTM2LjY0Mi0xNi40MzQtMzYuNjQyLTM2LjYzOCAwLTIwLjIwNSAxNi40MzctMzYuNjQyIDM2LjY0Mi0zNi42NDIgMjAuMjA0IDAgMzYuNjQxIDE2LjQzNyAzNi42NDEgMzYuNjQyIDAgMjAuMjA0LTE2LjQzNyAzNi42MzgtMzYuNjQxIDM2LjYzOHptMTMxLjgzMSA2Ny4xNzljLTE0LjQ4NyAwLTI2LjI3LTExLjc4OC0yNi4yNy0yNi4yNzFzMTEuNzgzLTI2LjI3IDI2LjI3LTI2LjI3IDI2LjI3IDExLjc4NyAyNi4yNyAyNi4yN2MwIDE0LjQ4My0xMS43ODMgMjYuMjcxLTI2LjI3IDI2LjI3MXonCiAgICAgICAgICBzdHlsZT0nZmlsbDojMjMxZjIwJy8+Cjwvc3ZnPg==">
+      <bpmn:extensionElements>
+        <zeebe:properties>
+          <zeebe:property name="inbound.type" value="io.camunda:connector-kafka-inbound:1" />
+          <zeebe:property name="authenticationType" value="credentials" />
+          <zeebe:property name="topic.bootstrapServers" value="localhost:9092" />
+          <zeebe:property name="topic.topicName" value="all_orders" />
+          <zeebe:property name="groupId" value="camunda-order-processor" />
+          <zeebe:property name="autoOffsetReset" value="earliest" />
+          <zeebe:property name="schemaStrategy.type" value="schemaRegistry" />
+          <zeebe:property name="schemaStrategy.schemaType" value="avro" />
+          <zeebe:property name="schemaStrategy.schemaRegistryUrl" value="http://localhost:8082" />
+          <zeebe:property name="consumeUnmatchedEvents" value="true" />
+          <zeebe:property name="correlationRequired" value="notRequired" />
+          <zeebe:property name="deduplicationModeManualFlag" value="false" />
+          <zeebe:property name="deduplicationMode" value="AUTO" />
+          <zeebe:property name="resultVariable" value="" />
+          <zeebe:property name="resultExpression" value="= {&#10;  orderId       : value.messageObject.id,&#10;  orderNumber   : value.messageObject.number,&#10;  orderStatusId : value.messageObject.statusId,&#10;  stateName     : value.messageObject.stateName,&#10;  shopId        : value.messageObject.shopId,&#10;  managerId     : value.messageObject.managerId,&#10;  paymentTypeId : value.messageObject.paymentTypeId,&#10;  orderComment  : value.messageObject.comment,&#10;  organization  : value.messageObject.organization,&#10;  specification : value.messageObject.specification,&#10;  correlationId : value.metadata.correlationId,&#10;  orderPayload  : value,&#10;  statusOptions : [{label: &#34;Оформляемый&#34;, value: &#34;C0003089DD24DC9A&#34;},{label: &#34;Исполняемый&#34;, value: &#34;C0008686474408E5&#34;},{label: &#34;Внимание&#34;, value: &#34;80010000000020AE&#34;},{label: &#34;Нет ткани&#34;, value: &#34;80010000000020A4&#34;},{label: &#34;Ожидание&#34;, value: &#34;8001000000001523&#34;},{label: &#34;Жду оплату&#34;, value: &#34;8001000000001564&#34;},{label: &#34;Региональный склад&#34;, value: &#34;80010000000020B3&#34;},{label: &#34;Обрабатывается Ковров&#34;, value: &#34;8001000000001500&#34;},{label: &#34;Обрабатывается Новосибирск&#34;, value: &#34;8001000000001501&#34;},{label: &#34;Ковров планирование&#34;, value: &#34;800100000000011F&#34;},{label: &#34;Новосибирск планирование&#34;, value: &#34;8001000000000120&#34;},{label: &#34;Поставка&#34;, value: &#34;8001000000000121&#34;},{label: &#34;Центральный склад&#34;, value: &#34;80010000000020A9&#34;},{label: &#34;Перемещение&#34;, value: &#34;80010000000034F4&#34;},{label: &#34;РС&#34;, value: &#34;80010000000034F5&#34;},{label: &#34;В пути&#34;, value: &#34;800100000000195B&#34;},{label: &#34;Транзит&#34;, value: &#34;8001000000003E0E&#34;},{label: &#34;Перемещение на ТТ&#34;, value: &#34;80010000000020B4&#34;},{label: &#34;Торговая точка&#34;, value: &#34;80010000000020B5&#34;},{label: &#34;Готов к отгрузке&#34;, value: &#34;8001000000000122&#34;},{label: &#34;Смежный склад&#34;, value: &#34;80010000000052A0&#34;},{label: &#34;Отгрузка завершена&#34;, value: &#34;8001000000000154&#34;},{label: &#34;Выполнен&#34;, value: &#34;8001000000000118&#34;},{label: &#34;Отменен&#34;, value: &#34;8010000000000108&#34;}]&#10;}" />
+        </zeebe:properties>
+      </bpmn:extensionElements>
+      <bpmn:outgoing>Flow_start_to_confirm</bpmn:outgoing>
+      <bpmn:messageEventDefinition id="MessageEventDefinition_1rtv6rd" messageRef="Message_088k21m" />
+    </bpmn:startEvent>
+    <bpmn:userTask id="Task_ConfirmOrder" name="Назначить статус заказа">
+      <bpmn:extensionElements>
+        <zeebe:assignmentDefinition candidateGroups="order-managers" />
+        <zeebe:formDefinition formId="ConfirmOrderForm" />
+        <zeebe:ioMapping>
+          <zeebe:input source="= orderPayload" target="orderPayload" />
+          <zeebe:input source="= orderNumber" target="orderNumber" />
+          <zeebe:input source="= stateName" target="stateName" />
+          <zeebe:input source="= (statusOptions[item.value = orderStatusId])[1].label" target="currentStatusName" />
+          <zeebe:input source="= statusOptions" target="statusOptions" />
+          <zeebe:output source="=confirmed" target="orderConfirmed" />
+          <zeebe:output source="=newStatusId" target="newStatusId" />
+        </zeebe:ioMapping>
+        <zeebe:userTask />
+      </bpmn:extensionElements>
+      <bpmn:incoming>Flow_start_to_confirm</bpmn:incoming>
+      <bpmn:outgoing>Flow_confirm_to_gw</bpmn:outgoing>
+    </bpmn:userTask>
+    <bpmn:exclusiveGateway id="GW_Confirmation" name="Подтверждён?">
+      <bpmn:incoming>Flow_confirm_to_gw</bpmn:incoming>
+      <bpmn:outgoing>Flow_confirmed</bpmn:outgoing>
+      <bpmn:outgoing>Flow_rejected</bpmn:outgoing>
+    </bpmn:exclusiveGateway>
+    <bpmn:serviceTask id="Task_UpdateKafka" name="Записать обновлённый&#10;статус в Kafka">
+      <bpmn:extensionElements>
+        <zeebe:taskDefinition type="write-order-to-kafka" retries="3" />
+        <zeebe:ioMapping>
+          <zeebe:input source="= orderPayload" target="orderPayload" />
+          <zeebe:input source="= newStatusId" target="newStatusId" />
+        </zeebe:ioMapping>
+      </bpmn:extensionElements>
+      <bpmn:incoming>Flow_confirmed</bpmn:incoming>
+      <bpmn:outgoing>Flow_updated_to_end</bpmn:outgoing>
+    </bpmn:serviceTask>
+    <bpmn:endEvent id="EndEvent_Confirmed" name="Статус обновлён&#10;в Kafka">
+      <bpmn:incoming>Flow_updated_to_end</bpmn:incoming>
+    </bpmn:endEvent>
+    <bpmn:endEvent id="EndEvent_Rejected" name="Заказ отклонён">
+      <bpmn:incoming>Flow_rejected</bpmn:incoming>
+    </bpmn:endEvent>
+    <bpmn:sequenceFlow id="Flow_start_to_confirm" sourceRef="StartEvent_Kafka" targetRef="Task_ConfirmOrder" />
+    <bpmn:sequenceFlow id="Flow_confirm_to_gw" sourceRef="Task_ConfirmOrder" targetRef="GW_Confirmation" />
+    <bpmn:sequenceFlow id="Flow_confirmed" sourceRef="GW_Confirmation" targetRef="Task_UpdateKafka">
+      <bpmn:conditionExpression>= orderConfirmed = true</bpmn:conditionExpression>
+    </bpmn:sequenceFlow>
+    <bpmn:sequenceFlow id="Flow_rejected" sourceRef="GW_Confirmation" targetRef="EndEvent_Rejected">
+      <bpmn:conditionExpression>= orderConfirmed != true</bpmn:conditionExpression>
+    </bpmn:sequenceFlow>
+    <bpmn:sequenceFlow id="Flow_updated_to_end" sourceRef="Task_UpdateKafka" targetRef="EndEvent_Confirmed" />
+  </bpmn:process>
+  <bpmndi:BPMNDiagram id="BPMNDiagram_1">
+    <bpmndi:BPMNPlane id="BPMNPlane_1" bpmnElement="Process_OrderKafka">
+      <bpmndi:BPMNShape id="Event_03zezq7_di" bpmnElement="StartEvent_Kafka">
+        <dc:Bounds x="152" y="112" width="36" height="36" />
+        <bpmndi:BPMNLabel>
+          <dc:Bounds x="138" y="155" width="65" height="27" />
+        </bpmndi:BPMNLabel>
+      </bpmndi:BPMNShape>
+      <bpmndi:BPMNShape id="Task_ConfirmOrder_di" bpmnElement="Task_ConfirmOrder">
+        <dc:Bounds x="250" y="90" width="200" height="80" />
+        <bpmndi:BPMNLabel />
+      </bpmndi:BPMNShape>
+      <bpmndi:BPMNShape id="GW_Confirmation_di" bpmnElement="GW_Confirmation" isMarkerVisible="true">
+        <dc:Bounds x="510" y="105" width="50" height="50" />
+        <bpmndi:BPMNLabel>
+          <dc:Bounds x="497" y="75" width="75" height="14" />
+        </bpmndi:BPMNLabel>
+      </bpmndi:BPMNShape>
+      <bpmndi:BPMNShape id="Task_UpdateKafka_di" bpmnElement="Task_UpdateKafka">
+        <dc:Bounds x="625" y="90" width="200" height="80" />
+        <bpmndi:BPMNLabel />
+      </bpmndi:BPMNShape>
+      <bpmndi:BPMNShape id="EndEvent_Confirmed_di" bpmnElement="EndEvent_Confirmed">
+        <dc:Bounds x="887" y="112" width="36" height="36" />
+        <bpmndi:BPMNLabel>
+          <dc:Bounds x="863" y="155" width="85" height="27" />
+        </bpmndi:BPMNLabel>
+      </bpmndi:BPMNShape>
+      <bpmndi:BPMNShape id="EndEvent_Rejected_di" bpmnElement="EndEvent_Rejected">
+        <dc:Bounds x="517" y="252" width="36" height="36" />
+        <bpmndi:BPMNLabel>
+          <dc:Bounds x="492" y="295" width="87" height="14" />
+        </bpmndi:BPMNLabel>
+      </bpmndi:BPMNShape>
+      <bpmndi:BPMNEdge id="Flow_start_to_confirm_di" bpmnElement="Flow_start_to_confirm">
+        <di:waypoint x="188" y="130" />
+        <di:waypoint x="250" y="130" />
+      </bpmndi:BPMNEdge>
+      <bpmndi:BPMNEdge id="Flow_confirm_to_gw_di" bpmnElement="Flow_confirm_to_gw">
+        <di:waypoint x="450" y="130" />
+        <di:waypoint x="510" y="130" />
+      </bpmndi:BPMNEdge>
+      <bpmndi:BPMNEdge id="Flow_confirmed_di" bpmnElement="Flow_confirmed">
+        <di:waypoint x="560" y="130" />
+        <di:waypoint x="625" y="130" />
+        <bpmndi:BPMNLabel>
+          <dc:Bounds x="577" y="112" width="18" height="14" />
+        </bpmndi:BPMNLabel>
+      </bpmndi:BPMNEdge>
+      <bpmndi:BPMNEdge id="Flow_rejected_di" bpmnElement="Flow_rejected">
+        <di:waypoint x="535" y="155" />
+        <di:waypoint x="535" y="252" />
+        <bpmndi:BPMNLabel>
+          <dc:Bounds x="542" y="195" width="22" height="14" />
+        </bpmndi:BPMNLabel>
+      </bpmndi:BPMNEdge>
+      <bpmndi:BPMNEdge id="Flow_updated_to_end_di" bpmnElement="Flow_updated_to_end">
+        <di:waypoint x="825" y="130" />
+        <di:waypoint x="887" y="130" />
+      </bpmndi:BPMNEdge>
+    </bpmndi:BPMNPlane>
+  </bpmndi:BPMNDiagram>
+</bpmn:definitions>
