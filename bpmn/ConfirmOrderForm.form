@@ -8,9 +8,9 @@
     },
     {
       "type": "textfield",
-      "key": "orderNumber",
-      "label": "Номер заказа",
-      "id": "Field_orderNumber",
+      "key": "orderId",
+      "label": "ID заказа",
+      "id": "Field_orderId",
       "readonly": true
     },
     {
