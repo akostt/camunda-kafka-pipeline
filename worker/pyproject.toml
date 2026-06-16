@@ -7,4 +7,5 @@ dependencies = [
     "aiokafka>=0.11.0",
     "fastavro>=1.12.0",
     "pyzeebe>=4.4.0",
+    "cryptography>=42.0.0",
 ]

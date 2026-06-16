@@ -6,14 +6,15 @@
         <ns2:properties>
           <ns2:property name="correlationKeyExpression" value="= string(value.messageObject.id)" />
           <ns2:property name="inbound.type" value="io.camunda:connector-kafka-inbound:1" />
-          <ns2:property name="authenticationType" value="credentials" />
-          <ns2:property name="topic.bootstrapServers" value="localhost:9092" />
+          <ns2:property name="authenticationType" value="custom" />
+          <ns2:property name="topic.bootstrapServers" value="localhost:9093" />
           <ns2:property name="topic.topicName" value="all_orders" />
           <ns2:property name="groupId" value="camunda-lc-start" />
-          <ns2:property name="autoOffsetReset" value="earliest" />
+          <ns2:property name="autoOffsetReset" value="latest" />
           <ns2:property name="schemaStrategy.type" value="schemaRegistry" />
           <ns2:property name="schemaStrategy.schemaType" value="avro" />
           <ns2:property name="schemaStrategy.schemaRegistryUrl" value="http://localhost:8082" />
+          <ns2:property name="additionalProperties" value="={&quot;security.protocol&quot;:&quot;SSL&quot;,&quot;ssl.keystore.location&quot;:&quot;{{secrets.KAFKA_PFX_PATH}}&quot;,&quot;ssl.keystore.type&quot;:&quot;PKCS12&quot;,&quot;ssl.keystore.password&quot;:&quot;{{secrets.KAFKA_PFX_PASSWORD}}&quot;,&quot;ssl.key.password&quot;:&quot;{{secrets.KAFKA_PFX_PASSWORD}}&quot;,&quot;ssl.truststore.location&quot;:&quot;{{secrets.KAFKA_TRUSTSTORE_PATH}}&quot;,&quot;ssl.truststore.type&quot;:&quot;PKCS12&quot;,&quot;ssl.truststore.password&quot;:&quot;{{secrets.KAFKA_PFX_PASSWORD}}&quot;,&quot;ssl.endpoint.identification.algorithm&quot;:&quot;&quot;}" />
           <ns2:property name="consumeUnmatchedEvents" value="true" />
           <ns2:property name="correlationRequired" value="notRequired" />
           <ns2:property name="deduplicationModeManualFlag" value="false" />
@@ -273,14 +274,15 @@
       <ns0:extensionElements>
         <ns2:properties>
           <ns2:property name="inbound.type" value="io.camunda:connector-kafka-inbound:1" />
-          <ns2:property name="authenticationType" value="credentials" />
-          <ns2:property name="topic.bootstrapServers" value="localhost:9092" />
+          <ns2:property name="authenticationType" value="custom" />
+          <ns2:property name="topic.bootstrapServers" value="localhost:9093" />
           <ns2:property name="topic.topicName" value="all_orders" />
           <ns2:property name="groupId" value="camunda-lc-next" />
-          <ns2:property name="autoOffsetReset" value="earliest" />
+          <ns2:property name="autoOffsetReset" value="latest" />
           <ns2:property name="schemaStrategy.type" value="schemaRegistry" />
           <ns2:property name="schemaStrategy.schemaType" value="avro" />
           <ns2:property name="schemaStrategy.schemaRegistryUrl" value="http://localhost:8082" />
+          <ns2:property name="additionalProperties" value="={&quot;security.protocol&quot;:&quot;SSL&quot;,&quot;ssl.keystore.location&quot;:&quot;{{secrets.KAFKA_PFX_PATH}}&quot;,&quot;ssl.keystore.type&quot;:&quot;PKCS12&quot;,&quot;ssl.keystore.password&quot;:&quot;{{secrets.KAFKA_PFX_PASSWORD}}&quot;,&quot;ssl.key.password&quot;:&quot;{{secrets.KAFKA_PFX_PASSWORD}}&quot;,&quot;ssl.truststore.location&quot;:&quot;{{secrets.KAFKA_TRUSTSTORE_PATH}}&quot;,&quot;ssl.truststore.type&quot;:&quot;PKCS12&quot;,&quot;ssl.truststore.password&quot;:&quot;{{secrets.KAFKA_PFX_PASSWORD}}&quot;,&quot;ssl.endpoint.identification.algorithm&quot;:&quot;&quot;}" />
           <ns2:property name="consumeUnmatchedEvents" value="true" />
           <ns2:property name="correlationKeyExpression" value="= string(value.messageObject.id)" />
           <ns2:property name="deduplicationModeManualFlag" value="false" />

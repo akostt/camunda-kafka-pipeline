@@ -4,6 +4,7 @@
 import datetime
 import decimal
 import json
+import os
 import random
 import re
 import string
@@ -24,8 +25,35 @@ from rich.panel import Panel
 from rich.prompt import Prompt
 from rich.table import Table
 
-KAFKA_BOOTSTRAP = "localhost:9092"
-SCHEMA_REGISTRY_URL = "http://localhost:8082"
+_KAFKA_SSL    = os.getenv("KAFKA_SSL", "0") == "1"
+_PFX_PATH     = os.getenv("KAFKA_PFX_PATH", "")
+_PFX_PASSWORD = os.getenv("KAFKA_PFX_PASSWORD", "")
+
+KAFKA_BOOTSTRAP     = os.getenv("KAFKA_BOOTSTRAP", "localhost:9093" if _KAFKA_SSL else "localhost:9092")
+SCHEMA_REGISTRY_URL = os.getenv("SCHEMA_REGISTRY_URL", "http://localhost:8082")
+
+
+def _kafka_ssl_config() -> dict:
+    if not _KAFKA_SSL:
+        return {}
+    if not _PFX_PATH or not _PFX_PASSWORD:
+        raise RuntimeError("KAFKA_SSL=1 requires KAFKA_PFX_PATH and KAFKA_PFX_PASSWORD")
+    from cryptography.hazmat.primitives.serialization import pkcs12, Encoding, PrivateFormat, NoEncryption
+    with open(_PFX_PATH, "rb") as f:
+        pfx_data = f.read()
+    private_key, cert, ca_certs = pkcs12.load_key_and_certificates(pfx_data, _PFX_PASSWORD.encode())
+    key_pem = private_key.private_bytes(Encoding.PEM, PrivateFormat.PKCS8, NoEncryption()).decode()
+    cert_pem = cert.public_bytes(Encoding.PEM).decode()
+    ca_pem = "".join(c.public_bytes(Encoding.PEM).decode() for c in (ca_certs or []))
+    cfg: dict = {
+        "security.protocol": "SSL",
+        "ssl.key.pem": key_pem,
+        "ssl.certificate.pem": cert_pem,
+        "ssl.endpoint.identification.algorithm": "none",
+    }
+    if ca_pem:
+        cfg["ssl.ca.pem"] = ca_pem
+    return cfg
 SCHEMAS_DIR = Path(__file__).parent.parent / "schemas"
 
 console = Console()
@@ -471,7 +499,7 @@ def produce(schema_def: dict, topic: str, count: int = 1, random_fill: bool = Fa
 
     sr = SchemaRegistryClient({"url": SCHEMA_REGISTRY_URL})
     serializer = AvroSerializer(sr, schema_str)
-    producer = Producer({"bootstrap.servers": KAFKA_BOOTSTRAP})
+    producer = Producer({"bootstrap.servers": KAFKA_BOOTSTRAP, **_kafka_ssl_config()})
 
     for i in range(count):
         if count > 1:

@@ -4,68 +4,51 @@ services:
     container_name: kafka
     ports:
       - "9092:9092"
+      - "9093:9093"
     environment:
-      # Уникальный номер этого брокера в кластере — нужен чтобы узлы различали друг друга
       KAFKA_NODE_ID: 1
-
-      # Этот узел одновременно хранит данные (broker) и управляет кластером (controller)
-      # Раньше управлением занимался отдельный сервис Zookeeper — теперь это встроено в Kafka (KRaft)
       KAFKA_PROCESS_ROLES: broker,controller
 
-      # Список узлов, участвующих в выборах контроллера. Формат: nodeId@хост:порт
-      KAFKA_CONTROLLER_QUORUM_VOTERS: 1@kafka:9093
+      # Controller перенесён на 9094 (не публикуется), чтобы освободить 9093 для SSL
+      KAFKA_CONTROLLER_QUORUM_VOTERS: 1@kafka:9094
 
-      # На каких портах Kafka принимает соединения
-      # INTERNAL:29092 — для контейнеров внутри Docker (kafka-ui)
-      # EXTERNAL:9092  — для программ на хосте (Camunda c8run)
-      # CONTROLLER:9093 — только для внутреннего управления, снаружи не используется
-      KAFKA_LISTENERS: INTERNAL://0.0.0.0:29092,EXTERNAL://0.0.0.0:9092,CONTROLLER://0.0.0.0:9093
+      # INTERNAL:29092  — docker-контейнеры (Schema Registry, kafka-ui)
+      # EXTERNAL:9092   — PLAINTEXT для инструментов без SSL
+      # SSL:9093        — TLS/mTLS для Camunda и внешних клиентов
+      # CONTROLLER:9094 — только KRaft, не публикуется наружу
+      KAFKA_LISTENERS: INTERNAL://0.0.0.0:29092,EXTERNAL://0.0.0.0:9092,SSL://0.0.0.0:9093,CONTROLLER://0.0.0.0:9094
+      KAFKA_ADVERTISED_LISTENERS: INTERNAL://kafka:29092,EXTERNAL://${KAFKA_HOST:-localhost}:9092,SSL://${KAFKA_HOST:-localhost}:9093
 
-      # Kafka сидит в Docker и не знает, как её видит внешний мир.
-      # Эти адреса она отдаёт клиенту после первого подключения — "ходи сюда дальше".
-      # INTERNAL → kafka:29092  — docker-контейнеры резолвят имя "kafka" через Docker DNS
-      # EXTERNAL → localhost:9092 — Camunda на хосте видит это как свой localhost
-      KAFKA_ADVERTISED_LISTENERS: INTERNAL://kafka:29092,EXTERNAL://localhost:9092
-
-      # Без шифрования и паролей — нормально для локальной разработки
-      KAFKA_LISTENER_SECURITY_PROTOCOL_MAP: INTERNAL:PLAINTEXT,EXTERNAL:PLAINTEXT,CONTROLLER:PLAINTEXT
-
-      # Говорим Kafka какой из listener'ов используется контроллером KRaft для служебных сообщений
-      # Должно совпадать с именем из KAFKA_LISTENERS — у нас это CONTROLLER
+      KAFKA_LISTENER_SECURITY_PROTOCOL_MAP: INTERNAL:PLAINTEXT,EXTERNAL:PLAINTEXT,SSL:SSL,CONTROLLER:PLAINTEXT
       KAFKA_CONTROLLER_LISTENER_NAMES: CONTROLLER
-
-      # Через какой listener брокеры общаются между собой (репликация, координация)
-      # У нас один брокер, но параметр обязателен — указываем INTERNAL (Docker-сеть)
       KAFKA_INTER_BROKER_LISTENER_NAME: INTERNAL
 
-      # Kafka создаёт топик автоматически при первой записи — не нужно создавать руками
+      # SSL — certs монтированы в /etc/kafka/secrets (KAFKA_SECRETS_DIR по умолчанию)
+      KAFKA_SSL_KEYSTORE_FILENAME: kafka.broker.keystore.p12
+      KAFKA_SSL_KEYSTORE_TYPE: PKCS12
+      KAFKA_SSL_KEYSTORE_CREDENTIALS: keystore_creds
+      KAFKA_SSL_KEY_CREDENTIALS: keystore_creds
+      KAFKA_SSL_TRUSTSTORE_FILENAME: kafka.broker.truststore.p12
+      KAFKA_SSL_TRUSTSTORE_TYPE: PKCS12
+      KAFKA_SSL_TRUSTSTORE_CREDENTIALS: truststore_creds
+      # required = mTLS: клиент обязан предъявить сертификат
+      KAFKA_SSL_CLIENT_AUTH: required
+      # Отключить проверку hostname (self-signed cert по IP, без DNS)
+      KAFKA_SSL_ENDPOINT_IDENTIFICATION_ALGORITHM: ""
+
       KAFKA_AUTO_CREATE_TOPICS_ENABLE: "true"
-
-      # Kafka хранит позиции чтения consumer'ов в служебном топике __consumer_offsets
-      # Нужно явно указать 1, иначе Kafka ждёт несколько брокеров и выдаёт ошибку при старте
       KAFKA_OFFSETS_TOPIC_REPLICATION_FACTOR: 1
-
-      # То же самое для служебного топика транзакций
       KAFKA_TRANSACTION_STATE_LOG_REPLICATION_FACTOR: 1
-
-      # Минимум брокеров, которые должны подтвердить запись транзакции — у нас один
       KAFKA_TRANSACTION_STATE_LOG_MIN_ISR: 1
-
-      # По умолчанию Kafka ждёт 3 сек перед стартом consumer-группы — вдруг ещё кто подключится
-      # 0 = не ждать, Camunda Kafka connector стартует быстрее
       KAFKA_GROUP_INITIAL_REBALANCE_DELAY_MS: 0
-
-      # Максимальный размер одного сообщения, дефолт 1 МБ — режет большие JSON-переменные Camunda
       KAFKA_MESSAGE_MAX_BYTES: 10485760
-
-      # Сообщения хранятся 24 часа, потом удаляются
       KAFKA_LOG_RETENTION_HOURS: 24
-
-      # Уникальный ID кластера, нужен для инициализации KRaft при первом запуске
       CLUSTER_ID: "MkU3OEVBNTcwNTJENDM2Qk"
 
     volumes:
       - kafka-data:/var/lib/kafka/data
+      - ${KAFKA_SSL_DIR:-./kafka-ssl}:/etc/kafka/secrets:ro
+
     restart: unless-stopped
     healthcheck:
       test: ["CMD", "kafka-broker-api-versions", "--bootstrap-server", "localhost:9092"]

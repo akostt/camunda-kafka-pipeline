@@ -5,8 +5,11 @@ import asyncio
 import io
 import json
 import logging
+import os
 import signal
+import ssl
 import struct
+import tempfile
 import urllib.request
 from decimal import Decimal
 from typing import Any
@@ -15,11 +18,38 @@ import fastavro
 from aiokafka import AIOKafkaProducer
 from pyzeebe import ZeebeWorker, create_insecure_channel
 
-ZEEBE_ADDRESS = "localhost:26500"
-BOOTSTRAP_SERVERS = "localhost:9092"
-TOPIC_NAME = "all_orders"
-SCHEMA_REGISTRY_URL = "http://localhost:8082"
-SCHEMA_SUBJECT = f"{TOPIC_NAME}-value"
+_KAFKA_SSL    = os.getenv("KAFKA_SSL", "0") == "1"
+_PFX_PATH     = os.getenv("KAFKA_PFX_PATH", "")
+_PFX_PASSWORD = os.getenv("KAFKA_PFX_PASSWORD", "")
+
+ZEEBE_ADDRESS       = os.getenv("ZEEBE_ADDRESS", "localhost:26500")
+BOOTSTRAP_SERVERS   = os.getenv("KAFKA_BOOTSTRAP", "localhost:9093" if _KAFKA_SSL else "localhost:9092")
+TOPIC_NAME          = "all_orders"
+SCHEMA_REGISTRY_URL = os.getenv("SCHEMA_REGISTRY_URL", "http://localhost:8082")
+SCHEMA_SUBJECT      = f"{TOPIC_NAME}-value"
+
+
+def _ssl_context_from_pfx(pfx_path: str, password: str) -> ssl.SSLContext:
+    from cryptography.hazmat.primitives.serialization import pkcs12, Encoding, PrivateFormat, NoEncryption
+    with open(pfx_path, "rb") as f:
+        pfx_data = f.read()
+    private_key, cert, ca_certs = pkcs12.load_key_and_certificates(pfx_data, password.encode())
+    ctx = ssl.SSLContext(ssl.PROTOCOL_TLS_CLIENT)
+    ctx.check_hostname = False
+    ctx.verify_mode = ssl.CERT_NONE
+    with tempfile.NamedTemporaryFile(suffix=".pem", delete=False) as cf:
+        cf.write(cert.public_bytes(Encoding.PEM))
+        cf.write(private_key.private_bytes(Encoding.PEM, PrivateFormat.PKCS8, NoEncryption()))
+        combined = cf.name
+    try:
+        ctx.load_cert_chain(combined)
+    finally:
+        os.unlink(combined)
+    if ca_certs:
+        ca_pem = b"".join(c.public_bytes(Encoding.PEM) for c in ca_certs)
+        ctx.load_verify_locations(cadata=ca_pem.decode())
+        ctx.verify_mode = ssl.CERT_REQUIRED
+    return ctx
 
 logging.basicConfig(level=logging.INFO, format="%(asctime)s %(levelname)s %(message)s")
 log = logging.getLogger(__name__)
@@ -85,8 +115,19 @@ async def main() -> None:
     schema_id, raw_schema, parsed_schema = _fetch_schema()
     log.info("Schema loaded id=%d", schema_id)
 
+    ssl_context = None
+    security_protocol = "PLAINTEXT"
+    if _KAFKA_SSL:
+        if not _PFX_PATH or not _PFX_PASSWORD:
+            raise RuntimeError("KAFKA_SSL=1 requires KAFKA_PFX_PATH and KAFKA_PFX_PASSWORD")
+        ssl_context = _ssl_context_from_pfx(_PFX_PATH, _PFX_PASSWORD)
+        security_protocol = "SSL"
+        log.info("SSL enabled, PFX=%s", _PFX_PATH)
+
     producer = AIOKafkaProducer(
         bootstrap_servers=BOOTSTRAP_SERVERS,
+        security_protocol=security_protocol,
+        ssl_context=ssl_context,
         acks=1,
         compression_type="gzip",
         linger_ms=5,

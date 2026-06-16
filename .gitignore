@@ -28,5 +28,8 @@ dist/
 !.env.example
 passwords.txt
 
+# ── SSL certificates (generated locally, never commit) ─────────────────────────
+kafka/kafka-ssl/
+
 # ── Office temp files ──────────────────────────────────────────────────────────
 ~$*
