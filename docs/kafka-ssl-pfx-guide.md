@@ -7,7 +7,7 @@ Kafka уже запущена с TLS. Есть один PKCS12/PFX-файл се
 | | c8run (локально) | Docker Compose | k3s |
 |---|---|---|---|
 | bootstrap.servers | `localhost:9093` | `kafka:9093` | `<server-ip>:9093` |
-| Путь к PFX | `/Users/alex/kafka-ssl/client-full.pfx` | `/mnt/kafka-ssl/client-full.pfx` | `/mnt/kafka-ssl/client-full.pfx` |
+| Путь к PFX | `/path/to/kafka-ssl/client-full.pfx` | `/mnt/kafka-ssl/client-full.pfx` | `/mnt/kafka-ssl/client-full.pfx` |
 | Хранение пароля | `export` в шелле / `.env` | `.env` файл | k8s Secret |
 | Монтирование PFX | не нужно (локальный файл) | bind mount | k8s Secret + volumeMount |
 
@@ -62,13 +62,13 @@ KAFKA_PFX_PASSWORD=ваш_пароль
 
 ```bash
 source kafka-ssl/.env
-/Users/alex/Git/Company/c8run-8.9.8/c8run start
+/path/to/c8run-8.9.8/c8run start
 ```
 
 Или передать напрямую при запуске:
 
 ```bash
-KAFKA_PFX_PASSWORD=ваш_пароль /Users/alex/Git/Company/c8run-8.9.8/c8run start
+KAFKA_PFX_PASSWORD=ваш_пароль /path/to/c8run-8.9.8/c8run start
 ```
 
 ### Docker Compose
@@ -135,29 +135,51 @@ helm upgrade camunda camunda/camunda-platform -n camunda -f values-connectors-pa
 
 В Camunda Modeler: Kafka Inbound Connector → поле `additionalProperties` → FEEL-выражение.
 
-`secrets.KAFKA_PFX_PASSWORD` подхватывается из env var автоматически во всех окружениях.
+Секреты подхватываются из env vars c8run автоматически (переменная с префиксом `SECRET_` становится `{{secrets.ИМЯ}}`).
 
-### Полный PFX (keystore + truststore в одном файле) — mTLS
+### Описание SSL-переменных
+
+| Переменная | Назначение |
+|---|---|
+| `security.protocol` | Протокол подключения к брокеру. `SSL` — шифрование + аутентификация по сертификату. |
+| `ssl.keystore.location` | Путь к **keystore** — файлу с *клиентским* сертификатом и приватным ключом. Брокер запрашивает его для проверки клиента (mTLS). |
+| `ssl.keystore.type` | Формат keystore. `PKCS12` (`.pfx`) — стандартный кроссплатформенный формат. Альтернатива: `JKS`. |
+| `ssl.keystore.password` | Пароль для открытия файла keystore. |
+| `ssl.key.password` | Пароль к приватному ключу внутри keystore. Как правило совпадает с `ssl.keystore.password`. |
+| `ssl.truststore.location` | Путь к **truststore** — файлу с CA-сертификатами, которым *доверяет клиент*. Используется для проверки сертификата брокера. Должен быть создан через `keytool` (содержит CA как `trustedCertEntry`). |
+| `ssl.truststore.type` | Формат truststore. Аналогично `ssl.keystore.type`. |
+| `ssl.truststore.password` | Пароль для открытия файла truststore. |
+| `ssl.endpoint.identification.algorithm` | Алгоритм проверки hostname в сертификате брокера. Пустая строка `""` — отключает проверку (нужно для self-signed сертификатов, где CN не совпадает с `localhost`). |
+
+### Полный конфиг — mTLS (keystore + отдельный truststore)
 
 ```feel
 ={
   "security.protocol": "SSL",
-  "ssl.keystore.location": "/путь/к/client-full.pfx",
+  "ssl.keystore.location": "{{secrets.KAFKA_PFX_PATH}}",
   "ssl.keystore.type": "PKCS12",
-  "ssl.keystore.password": secrets.KAFKA_PFX_PASSWORD,
-  "ssl.key.password": secrets.KAFKA_PFX_PASSWORD,
-  "ssl.truststore.location": "/путь/к/client-full.pfx",
+  "ssl.keystore.password": "{{secrets.KAFKA_PFX_PASSWORD}}",
+  "ssl.key.password": "{{secrets.KAFKA_PFX_PASSWORD}}",
+  "ssl.truststore.location": "{{secrets.KAFKA_TRUSTSTORE_PATH}}",
   "ssl.truststore.type": "PKCS12",
-  "ssl.truststore.password": secrets.KAFKA_PFX_PASSWORD,
+  "ssl.truststore.password": "{{secrets.KAFKA_PFX_PASSWORD}}",
   "ssl.endpoint.identification.algorithm": ""
 }
+```
+
+Переменные в `c8run-8.9.8/.env`:
+
+```bash
+SECRET_KAFKA_PFX_PATH=/absolute/path/to/kafka-ssl/client-full.pfx
+SECRET_KAFKA_TRUSTSTORE_PATH=/absolute/path/to/kafka-ssl/client.truststore.p12
+SECRET_KAFKA_PFX_PASSWORD=your_password
 ```
 
 **Пути к файлу по окружениям:**
 
 | Окружение | `ssl.keystore.location` / `ssl.truststore.location` |
 |-----------|-----------------------------------------------------|
-| c8run (Mac) | `/Users/alex/kafka-ssl/client-full.pfx` |
+| c8run (Mac) | `/path/to/kafka-ssl/client-full.pfx` |
 | Docker Compose | `/mnt/kafka-ssl/client-full.pfx` |
 | k3s | `/mnt/kafka-ssl/client-full.pfx` |
 
@@ -210,7 +232,7 @@ helm upgrade camunda camunda/camunda-platform -n camunda -f values-connectors-pa
 
 ```bash
 # c8run — логи коннектора
-tail -f /Users/alex/Git/Company/c8run-8.9.8/log/connectors.log | grep -E "SSL|Consumer status|security"
+tail -f /path/to/c8run-8.9.8/log/connectors.log | grep -E "SSL|Consumer status|security"
 
 # k3s
 kubectl -n camunda logs -l app=camunda-connectors --tail=50 | grep -E "SSL|Consumer status"
