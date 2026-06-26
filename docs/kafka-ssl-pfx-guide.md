@@ -1,157 +1,197 @@
 # Подключение Camunda к Kafka по SSL/TLS с PFX-сертификатом
 
-Kafka уже запущена с TLS. Есть один PKCS12/PFX-файл сертификата.
+Руководство для подключения Camunda 8 Connectors к Kafka с mTLS-аутентификацией через PFX/PKCS12 сертификаты.
 
 ## Различия по окружениям
 
-| | c8run (локально) | Docker Compose | k3s |
-|---|---|---|---|
-| bootstrap.servers | `localhost:9093` | `kafka:9093` | `<server-ip>:9093` |
-| Путь к PFX | `/path/to/kafka-ssl/client-full.pfx` | `/mnt/kafka-ssl/client-full.pfx` | `/mnt/kafka-ssl/client-full.pfx` |
-| Хранение пароля | `export` в шелле / `.env` | `.env` файл | k8s Secret |
-| Монтирование PFX | не нужно (локальный файл) | bind mount | k8s Secret + volumeMount |
+| | c8run (локально) | k3s |
+|---|---|---|
+| bootstrap.servers | `localhost:9093` | `<server-ip>:9093` |
+| Путь к PFX | `/path/to/kafka-ssl/client-full.pfx` | `/mnt/kafka-ssl/client-full.pfx` |
+| Хранение пароля | `.env` файл | k8s Secret |
+| Монтирование PFX | не нужно (локальный файл) | k8s Secret + volumeMount |
 
 ---
 
-## Шаг 1. Локальная Kafka в Docker — настроить `localhost`
+## Генерация сертификатов
 
-Если Kafka поднята в Docker и нужен доступ с хоста (`localhost:9093`), advertised listener должен быть `localhost`, а не IP сервера.
+Скрипт `infra/camunda-k3s-setup.sh` генерирует все сертификаты автоматически.  
+Для ручной генерации:
+
+```bash
+# Корневой CA
+openssl genrsa -out ca.key 4096
+openssl req -new -x509 -days 3650 -key ca.key -out ca.crt -subj "/CN=KafkaCA/O=Project"
+
+# Брокер (CN = IP-адрес сервера)
+keytool -genkeypair -alias broker -keyalg RSA -keysize 2048 \
+  -dname "CN=<SERVER_IP>,O=Project" \
+  -keystore kafka.broker.keystore.p12 -storetype PKCS12 \
+  -storepass <PASS> -keypass <PASS> -validity 3650
+
+keytool -certreq -alias broker -keystore kafka.broker.keystore.p12 \
+  -storetype PKCS12 -storepass <PASS> -file broker.csr
+
+openssl x509 -req -days 3650 -in broker.csr -CA ca.crt -CAkey ca.key \
+  -CAcreateserial -out broker-signed.crt
+
+keytool -import -alias CARoot -noprompt -file ca.crt \
+  -keystore kafka.broker.keystore.p12 -storetype PKCS12 -storepass <PASS>
+keytool -import -alias broker -noprompt -file broker-signed.crt \
+  -keystore kafka.broker.keystore.p12 -storetype PKCS12 -storepass <PASS>
+keytool -import -alias CARoot -noprompt -file ca.crt \
+  -keystore kafka.broker.truststore.p12 -storetype PKCS12 -storepass <PASS>
+
+# Клиент (для Connectors)
+keytool -genkeypair -alias client -keyalg RSA -keysize 2048 \
+  -dname "CN=camunda-client,O=Project" \
+  -keystore client-full.pfx -storetype PKCS12 \
+  -storepass <PASS> -keypass <PASS> -validity 3650
+
+keytool -certreq -alias client -keystore client-full.pfx \
+  -storetype PKCS12 -storepass <PASS> -file client.csr
+
+openssl x509 -req -days 3650 -in client.csr -CA ca.crt -CAkey ca.key \
+  -CAcreateserial -out client-signed.crt
+
+keytool -import -alias CARoot -noprompt -file ca.crt \
+  -keystore client-full.pfx -storetype PKCS12 -storepass <PASS>
+keytool -import -alias client -noprompt -file client-signed.crt \
+  -keystore client-full.pfx -storetype PKCS12 -storepass <PASS>
+keytool -import -alias CARoot -noprompt -file ca.crt \
+  -keystore client.truststore.p12 -storetype PKCS12 -storepass <PASS>
+```
+
+---
+
+## Kafka — конфигурация брокера
+
+### Docker Compose (KRaft mode)
 
 ```yaml
-# docker-compose.yml (фрагмент)
 services:
   kafka:
     image: confluentinc/cp-kafka:7.7.1
+    container_name: kafka
+    restart: unless-stopped
     ports:
-      - "9092:9092"
-      - "9093:9093"
+      - "9092:9092"    # plaintext (для управления и Schema Registry)
+      - "9093:9093"    # SSL (для Connectors)
     environment:
-      KAFKA_LISTENERS: INTERNAL://0.0.0.0:29092,EXTERNAL://0.0.0.0:9092,SSL://0.0.0.0:9093,CONTROLLER://0.0.0.0:9094
-      KAFKA_ADVERTISED_LISTENERS: INTERNAL://kafka:29092,EXTERNAL://localhost:9092,SSL://localhost:9093
-      KAFKA_LISTENER_SECURITY_PROTOCOL_MAP: INTERNAL:PLAINTEXT,EXTERNAL:PLAINTEXT,SSL:SSL,CONTROLLER:PLAINTEXT
-      # SSL-сертификаты брокера (не клиентские)
-      KAFKA_SSL_KEYSTORE_FILENAME: kafka.broker.keystore.p12
-      KAFKA_SSL_KEYSTORE_TYPE: PKCS12
-      KAFKA_SSL_KEYSTORE_CREDENTIALS: keystore_creds
-      KAFKA_SSL_KEY_CREDENTIALS: keystore_creds
-      KAFKA_SSL_TRUSTSTORE_FILENAME: kafka.broker.truststore.p12
-      KAFKA_SSL_TRUSTSTORE_TYPE: PKCS12
-      KAFKA_SSL_TRUSTSTORE_CREDENTIALS: truststore_creds
-      KAFKA_SSL_CLIENT_AUTH: required        # mTLS; при TLS-only: none
-      KAFKA_SSL_ENDPOINT_IDENTIFICATION_ALGORITHM: ""
+      CLUSTER_ID: "<uuid-base64>"
+      KAFKA_NODE_ID: 1
+      KAFKA_PROCESS_ROLES: "broker,controller"
+      KAFKA_LISTENERS: "INTERNAL://0.0.0.0:29092,EXTERNAL://0.0.0.0:9092,SSL://0.0.0.0:9093,CONTROLLER://0.0.0.0:9094"
+      KAFKA_ADVERTISED_LISTENERS: "INTERNAL://kafka:29092,EXTERNAL://${SERVER_IP}:9092,SSL://${SERVER_IP}:9093"
+      KAFKA_LISTENER_SECURITY_PROTOCOL_MAP: "INTERNAL:PLAINTEXT,EXTERNAL:PLAINTEXT,SSL:SSL,CONTROLLER:PLAINTEXT"
+      KAFKA_CONTROLLER_LISTENER_NAMES: "CONTROLLER"
+      KAFKA_INTER_BROKER_LISTENER_NAME: "INTERNAL"
+      KAFKA_CONTROLLER_QUORUM_VOTERS: "1@kafka:9094"
+      KAFKA_SSL_KEYSTORE_FILENAME: "kafka.broker.keystore.p12"
+      KAFKA_SSL_KEYSTORE_TYPE: "PKCS12"
+      KAFKA_SSL_KEYSTORE_CREDENTIALS: "keystore_creds"
+      KAFKA_SSL_KEY_CREDENTIALS: "keystore_creds"
+      KAFKA_SSL_TRUSTSTORE_FILENAME: "kafka.broker.truststore.p12"
+      KAFKA_SSL_TRUSTSTORE_TYPE: "PKCS12"
+      KAFKA_SSL_TRUSTSTORE_CREDENTIALS: "truststore_creds"
+      KAFKA_SSL_CLIENT_AUTH: "required"         # mTLS: клиент обязан предоставить сертификат
+      KAFKA_SSL_ENDPOINT_IDENTIFICATION_ALGORITHM: ""   # отключает hostname verification (self-signed)
     volumes:
-      - ./kafka-ssl:/etc/kafka/secrets:ro    # папка с broker keystore/truststore
+      - ./kafka-ssl:/etc/kafka/secrets:ro
+      - kafka-data:/var/lib/kafka/data
+
+  schema-registry:
+    image: confluentinc/cp-schema-registry:7.7.1
+    container_name: schema-registry
+    restart: unless-stopped
+    ports:
+      - "8081:8081"
+    environment:
+      SCHEMA_REGISTRY_HOST_NAME: schema-registry
+      SCHEMA_REGISTRY_KAFKASTORE_BOOTSTRAP_SERVERS: "kafka:29092"
+      SCHEMA_REGISTRY_LISTENERS: "http://0.0.0.0:8081"
+    depends_on:
+      - kafka
+
+volumes:
+  kafka-data:
 ```
 
-> Если используется один и тот же `docker-compose.yml` и для сервера, и локально — выносите `KAFKA_ADVERTISED_LISTENERS` в `.env` файл и переопределяйте по окружению.
+> Файлы в `/etc/kafka/secrets`: `kafka.broker.keystore.p12`, `kafka.broker.truststore.p12`, `keystore_creds`, `truststore_creds`.
 
 ---
 
-## Шаг 2. Сохранить пароль от PFX
+## Хранение пароля от PFX
 
 ### c8run (локально)
 
-Создать файл `.env` в директории проекта (добавить в `.gitignore`):
-
 ```bash
-# kafka-ssl/.env  или в корне проекта
-KAFKA_PFX_PASSWORD=ваш_пароль
+# .env в корне проекта (добавить в .gitignore)
+SECRET_KAFKA_PFX_PATH=/path/to/kafka-ssl/client-full.pfx
+SECRET_KAFKA_TRUSTSTORE_PATH=/path/to/kafka-ssl/client.truststore.p12
+SECRET_KAFKA_PFX_PASSWORD=ваш_пароль
 ```
 
-Загрузить перед запуском c8run:
-
+Загрузить перед запуском:
 ```bash
-source kafka-ssl/.env
-/path/to/c8run-8.9.8/c8run start
-```
-
-Или передать напрямую при запуске:
-
-```bash
-KAFKA_PFX_PASSWORD=ваш_пароль /path/to/c8run-8.9.8/c8run start
-```
-
-### Docker Compose
-
-Создать `.env` рядом с `docker-compose.yml` (добавить в `.gitignore`):
-
-```bash
-# .env
-KAFKA_PFX_PASSWORD=ваш_пароль
-```
-
-В `docker-compose.yml` для connectors:
-
-```yaml
-services:
-  connectors:
-    image: camunda/connectors-bundle:8.9.5
-    env_file: .env
-    volumes:
-      - ./kafka-ssl/client-full.pfx:/mnt/kafka-ssl/client-full.pfx:ro
+source .env && c8run start
 ```
 
 ### k3s / Kubernetes
 
 ```bash
-kubectl create secret generic kafka-ssl-passwords \
+kubectl create secret generic kafka-ssl-certs \
   --from-literal=KAFKA_PFX_PASSWORD=ваш_пароль \
+  --from-file=client-full.pfx=./kafka-ssl/client-full.pfx \
+  --from-file=client-truststore.p12=./kafka-ssl/client.truststore.p12 \
   -n camunda
 ```
 
-В Helm values (`values-connectors-patch.yaml`):
+В `values-camunda.yaml`:
 
 ```yaml
 connectors:
-  extraVolumes:
-    - name: kafka-ssl
-      secret:
-        secretName: kafka-ssl-pfx        # отдельный secret с самим PFX-файлом
-  extraVolumeMounts:
-    - name: kafka-ssl
-      mountPath: /mnt/kafka-ssl
-      readOnly: true
   env:
     - name: KAFKA_PFX_PASSWORD
       valueFrom:
         secretKeyRef:
-          name: kafka-ssl-passwords
+          name: kafka-ssl-certs
           key: KAFKA_PFX_PASSWORD
-```
-
-Создать secret с PFX-файлом:
-
-```bash
-kubectl create secret generic kafka-ssl-pfx \
-  --from-file=client-full.pfx=./kafka-ssl/client-full.pfx \
-  -n camunda
-
-helm upgrade camunda camunda/camunda-platform -n camunda -f values-connectors-patch.yaml
+    - name: KAFKA_PFX_PATH
+      value: "/mnt/kafka-ssl/client-full.pfx"
+    - name: KAFKA_TRUSTSTORE_PATH
+      value: "/mnt/kafka-ssl/client.truststore.p12"
+  extraVolumes:
+    - name: kafka-ssl
+      secret:
+        secretName: kafka-ssl-certs
+  extraVolumeMounts:
+    - name: kafka-ssl
+      mountPath: /mnt/kafka-ssl
+      readOnly: true
 ```
 
 ---
 
-## Шаг 3. Настроить BPMN-коннектор
+## Настройка BPMN-коннектора
 
-В Camunda Modeler: Kafka Inbound Connector → поле `additionalProperties` → FEEL-выражение.
+В Camunda Modeler в поле `additionalProperties` (FEEL-выражение):
 
-Секреты подхватываются из env vars c8run автоматически (переменная с префиксом `SECRET_` становится `{{secrets.ИМЯ}}`).
+### Описание SSL-параметров
 
-### Описание SSL-переменных
-
-| Переменная | Назначение |
+| Параметр | Назначение |
 |---|---|
-| `security.protocol` | Протокол подключения к брокеру. `SSL` — шифрование + аутентификация по сертификату. |
-| `ssl.keystore.location` | Путь к **keystore** — файлу с *клиентским* сертификатом и приватным ключом. Брокер запрашивает его для проверки клиента (mTLS). |
-| `ssl.keystore.type` | Формат keystore. `PKCS12` (`.pfx`) — стандартный кроссплатформенный формат. Альтернатива: `JKS`. |
-| `ssl.keystore.password` | Пароль для открытия файла keystore. |
-| `ssl.key.password` | Пароль к приватному ключу внутри keystore. Как правило совпадает с `ssl.keystore.password`. |
-| `ssl.truststore.location` | Путь к **truststore** — файлу с CA-сертификатами, которым *доверяет клиент*. Используется для проверки сертификата брокера. Должен быть создан через `keytool` (содержит CA как `trustedCertEntry`). |
-| `ssl.truststore.type` | Формат truststore. Аналогично `ssl.keystore.type`. |
-| `ssl.truststore.password` | Пароль для открытия файла truststore. |
-| `ssl.endpoint.identification.algorithm` | Алгоритм проверки hostname в сертификате брокера. Пустая строка `""` — отключает проверку (нужно для self-signed сертификатов, где CN не совпадает с `localhost`). |
+| `security.protocol` | `SSL` — шифрование + mTLS аутентификация |
+| `ssl.keystore.location` | Путь к клиентскому keystore (PFX с ключом и сертификатом) |
+| `ssl.keystore.type` | `PKCS12` для `.pfx` файлов |
+| `ssl.keystore.password` | Пароль keystore |
+| `ssl.key.password` | Пароль приватного ключа (обычно совпадает с keystore.password) |
+| `ssl.truststore.location` | Путь к truststore с CA-сертификатом брокера |
+| `ssl.truststore.type` | `PKCS12` |
+| `ssl.truststore.password` | Пароль truststore |
+| `ssl.endpoint.identification.algorithm` | `""` — отключает проверку hostname (для self-signed) |
 
-### Полный конфиг — mTLS (keystore + отдельный truststore)
+### Полный конфиг mTLS (keystore + truststore)
 
 ```feel
 ={
@@ -167,84 +207,35 @@ helm upgrade camunda camunda/camunda-platform -n camunda -f values-connectors-pa
 }
 ```
 
-Переменные в `c8run-8.9.8/.env`:
-
-```bash
-SECRET_KAFKA_PFX_PATH=/absolute/path/to/kafka-ssl/client-full.pfx
-SECRET_KAFKA_TRUSTSTORE_PATH=/absolute/path/to/kafka-ssl/client.truststore.p12
-SECRET_KAFKA_PFX_PASSWORD=your_password
-```
-
-**Пути к файлу по окружениям:**
-
-| Окружение | `ssl.keystore.location` / `ssl.truststore.location` |
-|-----------|-----------------------------------------------------|
-| c8run (Mac) | `/path/to/kafka-ssl/client-full.pfx` |
-| Docker Compose | `/mnt/kafka-ssl/client-full.pfx` |
-| k3s | `/mnt/kafka-ssl/client-full.pfx` |
-
-### Только truststore (TLS без mTLS)
-
-Брокер не требует клиентский сертификат (`ssl.client.auth=none`). PFX содержит только CA:
-
-```feel
-={
-  "security.protocol": "SSL",
-  "ssl.truststore.location": "/путь/к/client-full.pfx",
-  "ssl.truststore.type": "PKCS12",
-  "ssl.truststore.password": secrets.KAFKA_PFX_PASSWORD,
-  "ssl.endpoint.identification.algorithm": ""
-}
-```
-
-### Только keystore (CA встроен в JVM / публичный CA)
-
-```feel
-={
-  "security.protocol": "SSL",
-  "ssl.keystore.location": "/путь/к/client-full.pfx",
-  "ssl.keystore.type": "PKCS12",
-  "ssl.keystore.password": secrets.KAFKA_PFX_PASSWORD,
-  "ssl.key.password": secrets.KAFKA_PFX_PASSWORD,
-  "ssl.endpoint.identification.algorithm": ""
-}
-```
-
 ### Остальные параметры коннектора
 
-| Поле | c8run / локально | Docker Compose / k3s |
-|------|------------------|----------------------|
+| Поле | c8run / локально | k3s |
+|---|---|---|
 | `authenticationType` | `custom` | `custom` |
-| `topic.bootstrapServers` | `localhost:9093` | `kafka:9093` / `<ip>:9093` |
+| `topic.bootstrapServers` | `localhost:9093` | `<SERVER_IP>:9093` |
 | `topic.topicName` | `all_orders` | `all_orders` |
-| `groupId` | `camunda-order-processor` | `camunda-order-processor` |
+| `groupId` | `camunda-lc-start` | `camunda-lc-start` |
+| `schemaRegistryUrl` | `http://localhost:8081` | `http://<SERVER_IP>:8081` |
 | `autoOffsetReset` | `latest` | `latest` |
 
 ---
 
 ## Почему `additionalProperties`, а не отдельные свойства
 
-`KafkaConnectorProperties` в `connector-kafka-8.9.x.jar` не имеет полей `securityProtocol`, `ssl.*`. Все SSL-параметры передаются только через `additionalProperties` (`@FEEL Map`), который применяется последним через `props.putAll()` и перекрывает дефолтный `security.protocol=PLAINTEXT`.
+`KafkaConnectorProperties` в `connector-kafka-8.9.x.jar` не имеет полей `securityProtocol`, `ssl.*`. Все SSL-параметры передаются только через `additionalProperties` (`@FEEL Map`), который применяется через `props.putAll()` и перекрывает дефолтный `security.protocol=PLAINTEXT`.
 
 ---
 
 ## Проверка
 
 ```bash
-# c8run — логи коннектора
-tail -f /path/to/c8run-8.9.8/log/connectors.log | grep -E "SSL|Consumer status|security"
+# Логи Connectors в k3s — ждём "Consumer status changed to UP"
+kubectl -n camunda logs deployment/camunda-connectors --tail=50 | grep -E "SSL|Consumer status|Kafka"
 
-# k3s
-kubectl -n camunda logs -l app=camunda-connectors --tail=50 | grep -E "SSL|Consumer status"
-```
-
-Ожидаемое: `Kafka Consumer status changed to UP`
-
-```bash
 # Consumer-группы на брокере
 docker exec kafka kafka-consumer-groups.sh \
   --bootstrap-server localhost:9092 \
-  --describe --group camunda-order-processor
+  --describe --group camunda-lc-start
 # STATE = Stable → подключено
 ```
 
@@ -253,10 +244,11 @@ docker exec kafka kafka-consumer-groups.sh \
 ## Частые ошибки
 
 | Симптом | Причина | Решение |
-|---------|---------|---------|
+|---|---|---|
 | `SSL handshake failed` | SSL-параметры не в `additionalProperties` | Перенести все `ssl.*` в FEEL Map |
-| `Connection refused :9093` | Kafka advertises IP сервера вместо localhost | Проверить `KAFKA_ADVERTISED_LISTENERS` |
-| `PKCS12 keystore not found` | Файл не смонтирован или путь неверный | Проверить mount / абсолютный путь |
+| `Connection refused :9093` | Kafka advertises неверный адрес | Проверить `KAFKA_ADVERTISED_LISTENERS` |
+| `PKCS12 keystore not found` | Файл не смонтирован или путь неверный | Проверить mount и абсолютный путь |
 | `PKIX path building failed` | CA не в truststore | PFX должен содержать CA-сертификат |
-| `secrets.KAFKA_PFX_PASSWORD is null` | Env var не установлена до старта | `source .env` перед `c8run start` |
+| `secrets.KAFKA_PFX_PASSWORD is null` | Env var не установлена | Проверить k8s secret и connectors.env в values |
 | Hostname mismatch | CN сертификата ≠ hostname | Добавить `"ssl.endpoint.identification.algorithm": ""` |
+| `UNAUTHENTICATED` при gRPC к Zeebe | Connectors не получают JWT от Keycloak | Добавить `CAMUNDA_CLIENT_ID/SECRET/AUTH_SERVER_URL` в connectors.env |

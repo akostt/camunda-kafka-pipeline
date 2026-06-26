@@ -1,0 +1,1614 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Askona · Управление заказами</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=Lato:wght@300;400;700;900&family=Roboto+Mono:wght@400;500&display=swap" rel="stylesheet">
+<script src="https://unpkg.com/vue@3/dist/vue.global.prod.js"></script>
+<script src="https://unpkg.com/@microsoft/signalr@8.0.0/dist/browser/signalr.min.js"></script>
+<style>
+:root {
+  --teal:    #2bb5a0;
+  --teal2:   #26a08d;
+  --teal3:   #1d8c7a;
+  --teal-lt: #e8f8f6;
+  --teal-md: #b2e5df;
+  --white:   #ffffff;
+  --gray-50: #f7f8f9;
+  --gray-100:#eef0f2;
+  --gray-200:#dde1e5;
+  --gray-300:#c5ccd4;
+  --gray-400:#9aa5b0;
+  --gray-500:#677585;
+  --gray-600:#4a5568;
+  --gray-700:#2d3748;
+  --gray-800:#1a202c;
+  --red:     #e53e3e;
+  --red-lt:  #fff5f5;
+  --orange:  #dd6b20;
+  --orange-lt:#fffaf0;
+  --green:   #38a169;
+  --green-lt:#f0fff4;
+  --blue:    #3182ce;
+  --mono:    'Roboto Mono', monospace;
+  --sans:    'Lato', sans-serif;
+  --r:       8px;
+  --r2:      12px;
+  --r3:      16px;
+  --sidebar: 320px;
+  --hdr:     60px;
+  --shadow:  0 1px 3px rgba(0,0,0,.08), 0 1px 2px rgba(0,0,0,.06);
+  --shadow2: 0 4px 12px rgba(0,0,0,.10), 0 2px 4px rgba(0,0,0,.06);
+  --shadow3: 0 10px 40px rgba(0,0,0,.14);
+}
+*, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0 }
+html, body { height: 100%; overflow: hidden }
+body {
+  font-family: var(--sans); font-size: 14px;
+  color: var(--gray-700); background: var(--gray-50);
+}
+a { color: inherit; text-decoration: none }
+button, select, input, textarea { font-family: var(--sans) }
+::-webkit-scrollbar { width: 4px }
+::-webkit-scrollbar-track { background: transparent }
+::-webkit-scrollbar-thumb { background: var(--gray-200); border-radius: 4px }
+::-webkit-scrollbar-thumb:hover { background: var(--gray-300) }
+
+/* ── Layout ── */
+#app { display: flex; flex-direction: column; height: 100vh }
+.shell { display: flex; flex: 1; overflow: hidden }
+
+/* ── Header ── */
+header {
+  height: var(--hdr); flex-shrink: 0;
+  background: var(--teal);
+  display: flex; align-items: center; justify-content: space-between;
+  padding: 0 24px;
+  box-shadow: 0 2px 8px rgba(43,181,160,.3);
+  position: relative; z-index: 20;
+}
+
+.brand { display: flex; align-items: center; gap: 14px }
+
+/* Askona logo dots (replicated from brand) */
+.brand-logo {
+  display: flex; align-items: center; gap: 10px;
+}
+.logo-icon { flex-shrink: 0 }
+
+.brand-name {
+  font-size: 22px; font-weight: 900; color: white;
+  letter-spacing: -.02em; line-height: 1;
+}
+.brand-sub {
+  font-size: 9px; font-weight: 400; color: rgba(255,255,255,.65);
+  letter-spacing: .15em; text-transform: uppercase; margin-top: 1px;
+}
+.brand-divider { width: 1px; height: 28px; background: rgba(255,255,255,.25) }
+.brand-module {
+  font-size: 13px; font-weight: 700; color: rgba(255,255,255,.85);
+  letter-spacing: .02em;
+}
+
+.hdr-right { display: flex; align-items: center; gap: 16px }
+
+.live-badge {
+  display: flex; align-items: center; gap: 6px;
+  background: rgba(255,255,255,.15); border: 1px solid rgba(255,255,255,.25);
+  border-radius: 20px; padding: 5px 12px;
+  font-size: 12px; font-weight: 700; color: white;
+  letter-spacing: .06em;
+}
+.live-dot { width: 6px; height: 6px; border-radius: 50%; background: white; flex-shrink: 0 }
+.live-badge.on .live-dot { animation: pulse 2s infinite }
+@keyframes pulse { 0%,100%{opacity:1;transform:scale(1)} 50%{opacity:.4;transform:scale(.6)} }
+
+.hdr-counter {
+  font-size: 13px; color: rgba(255,255,255,.8); font-weight: 400;
+}
+.hdr-counter strong { color: white; font-weight: 700 }
+
+/* ── Buttons ── */
+.btn {
+  display: inline-flex; align-items: center; justify-content: center; gap: 6px;
+  border: none; cursor: pointer; border-radius: var(--r);
+  padding: 9px 18px; font-size: 13px; font-weight: 700;
+  transition: all .18s; white-space: nowrap; font-family: var(--sans);
+  letter-spacing: .01em;
+}
+.btn:disabled { opacity: .5; cursor: not-allowed }
+
+.btn-primary {
+  background: white; color: var(--teal3); box-shadow: var(--shadow);
+}
+.btn-primary:not(:disabled):hover {
+  background: var(--teal-lt); box-shadow: var(--shadow2); transform: translateY(-1px);
+}
+
+.btn-teal {
+  background: var(--teal); color: white; box-shadow: var(--shadow);
+}
+.btn-teal:not(:disabled):hover {
+  background: var(--teal2); box-shadow: 0 4px 16px rgba(43,181,160,.4); transform: translateY(-1px);
+}
+
+.btn-outline {
+  background: white; border: 1.5px solid var(--gray-200); color: var(--gray-600);
+}
+.btn-outline:not(:disabled):hover {
+  border-color: var(--teal); color: var(--teal); background: var(--teal-lt);
+}
+
+.btn-danger {
+  background: var(--red-lt); border: 1.5px solid #fed7d7; color: var(--red);
+}
+.btn-danger:hover { background: #fed7d7 }
+
+.btn-success {
+  background: var(--green-lt); border: 1.5px solid #c6f6d5; color: var(--green);
+}
+
+.btn-sm { padding: 7px 14px; font-size: 12px }
+.btn-xs { padding: 4px 10px; font-size: 11px; border-radius: 6px }
+
+/* ── Sidebar ── */
+aside {
+  width: var(--sidebar); flex-shrink: 0;
+  display: flex; flex-direction: column;
+  background: white; border-right: 1px solid var(--gray-100);
+  overflow: hidden;
+  box-shadow: 2px 0 8px rgba(0,0,0,.04);
+}
+
+/* Category tabs */
+.cat-tabs {
+  display: flex; border-bottom: 1px solid var(--gray-100);
+  background: var(--gray-50); flex-shrink: 0;
+}
+.cat-tab {
+  flex: 1; padding: 12px 6px; border: none; background: none; cursor: pointer;
+  font-family: var(--sans); font-size: 12px; font-weight: 700;
+  color: var(--gray-400); letter-spacing: .02em;
+  border-bottom: 3px solid transparent; margin-bottom: -1px;
+  transition: color .15s, border-color .15s;
+}
+.cat-tab:hover { color: var(--gray-600) }
+.cat-tab.active { color: var(--teal); border-bottom-color: var(--teal) }
+.cat-tab .cnt {
+  display: inline-flex; align-items: center; justify-content: center;
+  margin-left: 5px; padding: 1px 5px; min-width: 18px; height: 16px;
+  border-radius: 8px; font-size: 10px; background: var(--gray-100); color: var(--gray-500);
+  vertical-align: middle;
+}
+.cat-tab.active .cnt { background: var(--teal-lt); color: var(--teal) }
+
+/* Search area */
+.aside-top {
+  padding: 12px; display: flex; flex-direction: column; gap: 8px;
+  border-bottom: 1px solid var(--gray-100); flex-shrink: 0;
+  background: white;
+}
+
+.search-wrap { position: relative }
+.search-icon {
+  position: absolute; left: 11px; top: 50%; transform: translateY(-50%);
+  color: var(--gray-400); font-size: 14px; pointer-events: none;
+}
+.inp {
+  background: var(--gray-50); border: 1.5px solid var(--gray-200);
+  border-radius: var(--r); padding: 8px 12px;
+  color: var(--gray-700); font-size: 13px; width: 100%; outline: none;
+  transition: border-color .15s, box-shadow .15s, background .15s;
+  font-family: var(--sans);
+}
+.inp::placeholder { color: var(--gray-400) }
+.inp:focus {
+  border-color: var(--teal); background: white;
+  box-shadow: 0 0 0 3px rgba(43,181,160,.12);
+}
+.inp.error { border-color: var(--red); box-shadow: 0 0 0 3px rgba(229,62,62,.1) }
+.search-inp { padding-left: 34px }
+
+.filter-row { display: flex; gap: 8px }
+.sel-wrap { flex: 1; position: relative }
+.sel-arrow {
+  position: absolute; right: 10px; top: 50%; transform: translateY(-50%);
+  pointer-events: none; color: var(--gray-400); font-size: 10px;
+}
+select.inp { appearance: none; padding-right: 26px; cursor: pointer }
+
+.btn-icon {
+  width: 36px; height: 36px; flex-shrink: 0;
+  display: flex; align-items: center; justify-content: center;
+  background: var(--gray-50); border: 1.5px solid var(--gray-200);
+  border-radius: var(--r); color: var(--gray-500); cursor: pointer;
+  font-size: 15px; transition: all .15s;
+}
+.btn-icon:hover { background: var(--teal-lt); border-color: var(--teal-md); color: var(--teal) }
+.btn-icon.active { background: var(--teal-lt); border-color: var(--teal); color: var(--teal) }
+
+.btn-logout {
+  display: inline-flex; align-items: center; gap: 6px;
+  background: rgba(255,255,255,.12); border: 1px solid rgba(255,255,255,.22);
+  border-radius: var(--r); padding: 7px 13px;
+  font-size: 12px; font-weight: 700; color: rgba(255,255,255,.85);
+  letter-spacing: .03em; cursor: pointer; text-decoration: none;
+  transition: background .15s, border-color .15s, color .15s;
+}
+.btn-logout:hover {
+  background: rgba(229,62,62,.25); border-color: rgba(229,62,62,.45);
+  color: white;
+}
+
+/* Status chips */
+.status-chips {
+  padding: 10px 12px; display: flex; flex-wrap: wrap; gap: 5px;
+  border-bottom: 1px solid var(--gray-100); flex-shrink: 0; background: var(--gray-50);
+}
+.chip {
+  font-size: 11px; font-weight: 700; padding: 3px 10px;
+  border-radius: 20px; cursor: pointer; border: 1.5px solid;
+  transition: all .14s; user-select: none; letter-spacing: .02em;
+}
+.chip:hover { transform: translateY(-1px); box-shadow: 0 2px 6px rgba(0,0,0,.1) }
+.chip.chip-sel { box-shadow: 0 0 0 3px currentColor; opacity: 1 }
+
+/* Generator panel */
+.gen-panel {
+  border-bottom: 1px solid var(--gray-100);
+  overflow: hidden; transition: max-height .25s ease, opacity .2s;
+  flex-shrink: 0; background: var(--teal-lt);
+}
+.gen-inner { padding: 14px 12px; display: flex; flex-direction: column; gap: 10px }
+.gen-label {
+  font-size: 11px; font-weight: 900; letter-spacing: .08em;
+  text-transform: uppercase; color: var(--teal3);
+  display: flex; align-items: center; gap: 6px;
+}
+.gen-row { display: flex; gap: 8px }
+.gen-col { flex: 1; display: flex; flex-direction: column; gap: 4px }
+.field-lbl { font-size: 11px; color: var(--gray-500); letter-spacing: .02em; font-weight: 700 }
+.gen-result { font-size: 12px; color: var(--green); font-weight: 700 }
+.gen-error { font-size: 12px; color: var(--red); font-weight: 700 }
+
+/* Order list */
+.order-list { flex: 1; overflow-y: auto }
+.no-orders {
+  padding: 48px 20px; text-align: center;
+  color: var(--gray-400); font-size: 13px; line-height: 1.7;
+}
+.no-orders-icon { font-size: 32px; margin-bottom: 10px; display: block }
+
+.order-row {
+  display: flex; flex-direction: column; gap: 5px;
+  padding: 12px 14px; cursor: pointer;
+  border-bottom: 1px solid var(--gray-100);
+  border-left: 3px solid transparent;
+  transition: background .12s, border-color .12s;
+}
+.order-row:hover { background: var(--gray-50) }
+.order-row.sel {
+  background: var(--teal-lt);
+  border-left-color: var(--teal);
+}
+
+.or-top { display: flex; align-items: center; justify-content: space-between; gap: 8px }
+.or-id { font-size: 12px; font-weight: 700; color: var(--teal3); font-family: var(--mono); flex: 1; min-width: 0; overflow: hidden; text-overflow: ellipsis; white-space: nowrap }
+.or-badge {
+  display: inline-flex; align-items: center; gap: 4px;
+  font-size: 10px; font-weight: 700; padding: 2px 8px;
+  border-radius: 12px; flex-shrink: 0; border: 1.5px solid transparent;
+  letter-spacing: .03em;
+}
+.or-dot { width: 5px; height: 5px; border-radius: 50%; flex-shrink: 0 }
+.or-meta { display: flex; justify-content: space-between; font-size: 12px; color: var(--gray-500) }
+.or-amount { font-family: var(--mono); font-size: 11px; color: var(--gray-600); font-weight: 500 }
+
+/* ── Main ── */
+main { flex: 1; overflow-y: auto; display: flex; flex-direction: column; background: var(--gray-50) }
+
+.empty-state {
+  flex: 1; display: flex; align-items: center; justify-content: center;
+  flex-direction: column; gap: 16px;
+}
+.empty-icon {
+  width: 80px; height: 80px; border-radius: 20px;
+  background: white; border: 2px solid var(--gray-100);
+  display: flex; align-items: center; justify-content: center;
+  font-size: 28px; box-shadow: var(--shadow2);
+}
+.empty-title { font-size: 18px; font-weight: 700; color: var(--gray-600) }
+.empty-sub { font-size: 13px; color: var(--gray-400) }
+
+.detail { padding: 24px; display: flex; flex-direction: column; gap: 14px; max-width: 960px }
+
+/* Detail header card */
+.detail-hdr {
+  background: white; border-radius: var(--r3); padding: 20px 24px;
+  box-shadow: var(--shadow); border: 1px solid var(--gray-100);
+  position: relative; overflow: hidden;
+}
+.detail-hdr::before {
+  content: ''; position: absolute; top: 0; left: 0; right: 0; height: 4px;
+  background: linear-gradient(90deg, var(--teal) 0%, var(--teal2) 100%);
+}
+.dh-row { display: flex; align-items: flex-start; justify-content: space-between; gap: 16px }
+.dh-left { display: flex; flex-direction: column; gap: 3px; min-width: 0; flex: 1 }
+.dh-label { font-size: 10px; font-weight: 900; letter-spacing: .12em; text-transform: uppercase; color: var(--gray-400) }
+.dh-id { font-family: var(--mono); font-size: 15px; color: var(--gray-800); word-break: break-all; line-height: 1.4 }
+.dh-num { font-size: 13px; color: var(--gray-500); margin-top: 2px }
+.dh-right { display: flex; align-items: center; gap: 10px; flex-shrink: 0 }
+
+.sbadge-lg {
+  display: inline-flex; align-items: center; gap: 7px;
+  font-size: 12px; font-weight: 700; padding: 7px 14px;
+  border-radius: 20px; border: 2px solid;
+}
+.sbadge-lg .dot { width: 7px; height: 7px; border-radius: 50%; flex-shrink: 0 }
+
+.quick-actions {
+  display: flex; gap: 7px; margin-top: 16px; padding-top: 14px;
+  border-top: 1px solid var(--gray-100); flex-wrap: wrap; align-items: center;
+}
+.qa-label { font-size: 12px; color: var(--gray-400); font-weight: 700; margin-right: 2px; letter-spacing: .04em }
+
+/* Tabs */
+.tabs-wrap {
+  display: flex; gap: 2px; background: white;
+  border: 1px solid var(--gray-100); border-radius: var(--r2);
+  overflow: hidden; padding: 5px; flex-shrink: 0;
+  box-shadow: var(--shadow);
+}
+.tab-btn {
+  padding: 7px 18px; font-size: 13px; font-weight: 700;
+  color: var(--gray-500); background: none; border: none; cursor: pointer;
+  border-radius: 8px; transition: all .14s; font-family: var(--sans);
+}
+.tab-btn:hover { color: var(--gray-700); background: var(--gray-50) }
+.tab-btn.active { color: var(--teal); background: var(--teal-lt) }
+
+/* Meta grid */
+.meta-grid {
+  background: white; border-radius: var(--r2); padding: 18px 20px;
+  display: grid; grid-template-columns: repeat(auto-fill, minmax(160px, 1fr));
+  gap: 14px 24px; box-shadow: var(--shadow); border: 1px solid var(--gray-100);
+}
+.meta-lbl { font-size: 10px; font-weight: 900; letter-spacing: .1em; text-transform: uppercase; color: var(--gray-400); margin-bottom: 4px }
+.meta-val { font-size: 13px; color: var(--gray-700); font-weight: 400 }
+
+/* Card / table */
+.card { background: white; border-radius: var(--r2); overflow: hidden; box-shadow: var(--shadow); border: 1px solid var(--gray-100) }
+.card-table { width: 100%; border-collapse: collapse }
+.card-table th {
+  padding: 10px 14px; font-size: 10px; font-weight: 900; text-transform: uppercase;
+  letter-spacing: .08em; color: var(--gray-400); background: var(--gray-50);
+  text-align: left; border-bottom: 1px solid var(--gray-100);
+}
+.card-table td {
+  padding: 10px 14px; font-size: 13px; border-bottom: 1px solid var(--gray-100);
+  vertical-align: middle;
+}
+.card-table tr:last-child td { border-bottom: none }
+.card-table tbody tr:hover td { background: var(--gray-50) }
+.td-mono { font-family: var(--mono); font-size: 12px }
+.td-right { text-align: right }
+.card-table tfoot td { background: var(--gray-50); font-weight: 700; font-family: var(--mono) }
+.empty-tab { padding: 40px; text-align: center; color: var(--gray-400); font-size: 13px }
+
+/* History */
+.hist-row {
+  display: flex; align-items: center; gap: 10px;
+  padding: 10px 14px; border-bottom: 1px solid var(--gray-100);
+  transition: background .1s;
+}
+.hist-row:last-child { border-bottom: none }
+.hist-row:hover { background: var(--gray-50) }
+.hist-dot { width: 8px; height: 8px; border-radius: 50%; flex-shrink: 0 }
+.hist-arrow { color: var(--gray-300); font-size: 12px }
+.hist-from { font-size: 13px; color: var(--gray-500) }
+.hist-to { font-size: 13px; color: var(--gray-800); font-weight: 700 }
+.hist-spacer { flex: 1 }
+.hist-ts { font-family: var(--mono); font-size: 11px; color: var(--gray-400) }
+
+/* Info card */
+.info-card {
+  background: white; border-radius: var(--r2); padding: 20px 22px;
+  box-shadow: var(--shadow); border: 1px solid var(--gray-100);
+}
+.info-section-lbl {
+  font-size: 11px; font-weight: 900; text-transform: uppercase; letter-spacing: .08em;
+  color: var(--teal3); margin-bottom: 14px; display: flex; align-items: center; gap: 7px;
+}
+.info-section-lbl::before {
+  content: ''; width: 3px; height: 13px; background: var(--teal);
+  border-radius: 2px; flex-shrink: 0;
+}
+.info-grid {
+  display: grid; grid-template-columns: repeat(auto-fill, minmax(165px, 1fr));
+  gap: 12px 24px; margin-bottom: 14px;
+}
+
+/* Spec status selector */
+.spec-status-sel {
+  background: var(--gray-50); border: 1.5px solid var(--gray-200);
+  border-radius: 8px; padding: 5px 24px 5px 9px;
+  font-size: 12px; font-family: var(--sans);
+  color: var(--gray-600); width: 100%; cursor: pointer;
+  appearance: none; outline: none; transition: border-color .15s;
+}
+.spec-status-sel:focus { border-color: var(--teal); box-shadow: 0 0 0 3px rgba(43,181,160,.12) }
+
+/* ── Overlay / Modal ── */
+.overlay {
+  position: fixed; inset: 0; background: rgba(26,32,44,.55);
+  backdrop-filter: blur(6px); z-index: 200;
+  display: flex; align-items: center; justify-content: center;
+}
+.modal {
+  background: white; border-radius: var(--r3); padding: 28px 30px;
+  width: 420px; box-shadow: var(--shadow3);
+  animation: modalIn .18s ease;
+}
+@keyframes modalIn {
+  from { opacity: 0; transform: scale(.96) translateY(-10px) }
+  to   { opacity: 1; transform: scale(1) translateY(0) }
+}
+.modal-title {
+  font-size: 18px; font-weight: 900; margin-bottom: 3px; color: var(--gray-800);
+}
+.modal-subtitle { font-size: 12px; color: var(--gray-400); margin-bottom: 18px; font-family: var(--mono) }
+.modal-cur { font-size: 13px; color: var(--gray-500); margin-bottom: 14px }
+.modal-cur strong { color: var(--gray-700); font-weight: 700 }
+.form-row { margin-bottom: 14px }
+.form-lbl {
+  display: block; font-size: 11px; font-weight: 900; color: var(--gray-500);
+  margin-bottom: 5px; letter-spacing: .06em; text-transform: uppercase;
+}
+.form-hint { font-size: 11px; color: var(--gray-400); margin-top: 4px }
+.form-error { font-size: 11px; color: var(--red); margin-top: 4px; font-weight: 700 }
+.modal-actions { display: flex; justify-content: flex-end; gap: 10px; margin-top: 22px }
+.modal-divider { height: 1px; background: var(--gray-100); margin: 18px 0 }
+
+/* ── Toast ── */
+.toast {
+  position: fixed; bottom: 24px; right: 24px; z-index: 300;
+  font-size: 13px; font-weight: 700;
+  padding: 12px 20px; border-radius: 10px;
+  box-shadow: var(--shadow3); border: 1.5px solid;
+  animation: toastIn .22s cubic-bezier(.34,1.56,.64,1);
+  max-width: 340px;
+}
+@keyframes toastIn {
+  from { opacity: 0; transform: translateY(16px) scale(.9) }
+  to   { opacity: 1; transform: translateY(0) scale(1) }
+}
+.toast-ok   { background: var(--green-lt); border-color: #c6f6d5; color: var(--green) }
+.toast-err  { background: var(--red-lt);   border-color: #fed7d7; color: var(--red) }
+.toast-warn { background: var(--orange-lt);border-color: #fbd38d; color: var(--orange) }
+
+/* ── Create Modal ── */
+.create-modal {
+  background: white; border-radius: var(--r3);
+  width: 760px; max-width: 96vw; max-height: 90vh;
+  display: flex; flex-direction: column; overflow: hidden;
+  box-shadow: var(--shadow3); animation: modalIn .18s ease;
+}
+.cm-head {
+  display: flex; align-items: center; justify-content: space-between;
+  padding: 20px 24px; border-bottom: 1px solid var(--gray-100);
+  background: var(--gray-50); flex-shrink: 0;
+}
+.cm-title { font-size: 18px; font-weight: 900; color: var(--gray-800) }
+.cm-close {
+  background: none; border: none; color: var(--gray-400); font-size: 18px;
+  cursor: pointer; padding: 4px 8px; border-radius: 6px; line-height: 1;
+  transition: all .14s; font-weight: 300;
+}
+.cm-close:hover { color: var(--gray-700); background: var(--gray-100) }
+
+.cm-body { overflow-y: auto; padding: 24px; display: flex; flex-direction: column; gap: 20px }
+.cm-section {
+  font-size: 11px; font-weight: 900; color: var(--teal3);
+  text-transform: uppercase; letter-spacing: .08em; margin-bottom: 10px;
+  display: flex; align-items: center; gap: 7px;
+}
+.cm-section::before {
+  content: ''; width: 3px; height: 13px; background: var(--teal);
+  border-radius: 2px; flex-shrink: 0;
+}
+.cm-section-row {
+  display: flex; align-items: center; justify-content: space-between; margin-bottom: 10px;
+}
+.cm-grid { display: grid; grid-template-columns: 1fr 1fr 1fr; gap: 12px; margin-bottom: 12px }
+.cm-field { display: flex; flex-direction: column; gap: 5px }
+.cm-lbl { font-size: 11px; font-weight: 900; color: var(--gray-500); letter-spacing: .06em; text-transform: uppercase }
+.cm-lbl .req { color: var(--red); margin-left: 2px }
+.cm-input {
+  background: var(--gray-50); border: 1.5px solid var(--gray-200);
+  border-radius: var(--r); padding: 8px 12px; color: var(--gray-700);
+  font-size: 13px; font-family: var(--sans); width: 100%;
+  transition: border-color .15s, box-shadow .15s, background .15s; outline: none;
+}
+.cm-input:focus { border-color: var(--teal); background: white; box-shadow: 0 0 0 3px rgba(43,181,160,.1) }
+.cm-input.error { border-color: var(--red); box-shadow: 0 0 0 3px rgba(229,62,62,.08) }
+.cm-field-error { font-size: 11px; color: var(--red); font-weight: 700 }
+
+.spec-hdr {
+  display: grid; grid-template-columns: 1fr 72px 110px 180px 36px;
+  gap: 6px; margin-bottom: 6px; padding: 0 4px;
+}
+.spec-hdr span { font-size: 10px; font-weight: 900; color: var(--gray-400); text-transform: uppercase; letter-spacing: .05em }
+.spec-row {
+  display: grid; grid-template-columns: 1fr 72px 110px 180px 36px;
+  gap: 6px; align-items: end; margin-bottom: 8px;
+}
+.spec-del {
+  background: var(--gray-50); border: 1.5px solid var(--gray-200);
+  border-radius: var(--r); color: var(--gray-400); cursor: pointer;
+  font-size: 13px; height: 36px; width: 36px;
+  display: flex; align-items: center; justify-content: center; transition: all .14s;
+}
+.spec-del:hover { color: var(--red); border-color: #fed7d7; background: var(--red-lt) }
+
+.cm-foot {
+  display: flex; gap: 10px; align-items: center; justify-content: flex-end;
+  padding: 16px 24px; border-top: 1px solid var(--gray-100); flex-shrink: 0;
+  background: var(--gray-50);
+}
+
+/* Section block */
+.section-block {
+  background: var(--gray-50); border-radius: var(--r2);
+  padding: 14px; border: 1px solid var(--gray-100);
+}
+
+/* Confirm */
+.confirm-modal {
+  background: white; border-radius: var(--r3); padding: 28px 30px; width: 380px;
+  box-shadow: var(--shadow3); animation: modalIn .18s ease;
+}
+.confirm-icon { font-size: 32px; margin-bottom: 14px }
+.confirm-title { font-size: 18px; font-weight: 900; color: var(--gray-800); margin-bottom: 8px }
+.confirm-msg { font-size: 13px; color: var(--gray-600); line-height: 1.6; margin-bottom: 22px }
+
+/* Transitions */
+.fade-enter-active, .fade-leave-active { transition: opacity .16s }
+.fade-enter-from, .fade-leave-to { opacity: 0 }
+.slide-enter-active, .slide-leave-active { transition: max-height .25s ease, opacity .2s }
+.slide-enter-from, .slide-leave-to { max-height: 0 !important; opacity: 0 }
+.slide-enter-to, .slide-leave-from { max-height: 280px; opacity: 1 }
+
+/* Loading dots */
+@keyframes ldots { 0%,20%{opacity:.2} 50%{opacity:1} 80%,100%{opacity:.2} }
+.ldot { display: inline-block; width: 5px; height: 5px; border-radius: 50%; background: currentColor; animation: ldots 1.4s infinite }
+.ldot:nth-child(2) { animation-delay: .2s }
+.ldot:nth-child(3) { animation-delay: .4s }
+
+/* Scrollbar for modal */
+.cm-body::-webkit-scrollbar { width: 4px }
+.cm-body::-webkit-scrollbar-thumb { background: var(--gray-200); border-radius: 4px }
+
+/* Teal accent badge */
+.teal-tag {
+  display: inline-flex; align-items: center; gap: 4px;
+  background: var(--teal-lt); color: var(--teal3);
+  font-size: 10px; font-weight: 900; letter-spacing: .06em;
+  padding: 2px 8px; border-radius: 10px; border: 1px solid var(--teal-md);
+}
+
+/* Production venue badge */
+.venue-badge {
+  display: inline-flex; align-items: center;
+  font-size: 10px; font-weight: 900; letter-spacing: .05em;
+  padding: 2px 9px; border-radius: 10px; border: 1.5px solid;
+}
+.venue-kovrov      { background: #ede9fe; color: #5b21b6; border-color: #c4b5fd; }
+.venue-novosibirsk { background: #fce7f3; color: #9d174d; border-color: #fbcfe8; }
+
+/* Venue change warning in status modal */
+.venue-warn {
+  display: flex; gap: 10px; align-items: flex-start;
+  background: #fffbeb; border: 1.5px solid #fcd34d; border-radius: var(--r);
+  padding: 10px 12px; margin-bottom: 10px;
+  font-size: 12px; color: #92400e; line-height: 1.5;
+}
+.venue-warn > span { font-size: 16px; flex-shrink: 0; margin-top: 1px }
+
+/* History duration pill */
+.hist-dur {
+  font-size: 11px; color: var(--gray-400); font-family: var(--mono);
+  background: var(--gray-100); border-radius: 6px; padding: 1px 7px;
+  white-space: nowrap;
+}
+</style>
+</head>
+<body>
+<div id="app">
+
+  <!-- ═══ HEADER ═══ -->
+  <header>
+    <div class="brand">
+      <div class="brand-logo">
+        <svg class="logo-icon" viewBox="0 0 192 192" xmlns="http://www.w3.org/2000/svg" width="42" height="42">
+          <g fill="white">
+            <circle cx="88.5"  cy="31.5"  r="11.9"/>
+            <circle cx="134.3" cy="50.7"  r="16.1"/>
+            <circle cx="42.0"  cy="50.7"  r="8.6"/>
+            <circle cx="153.0" cy="95.2"  r="21.3"/>
+            <circle cx="23.6"  cy="95.2"  r="7.0"/>
+            <circle cx="134.3" cy="140.2" r="16.1"/>
+            <circle cx="42.1"  cy="140.2" r="8.6"/>
+            <circle cx="88.5"  cy="159.4" r="11.9"/>
+          </g>
+        </svg>
+        <div>
+          <div class="brand-name">askona</div>
+          <div class="brand-sub">территория здорового сна</div>
+        </div>
+      </div>
+      <div class="brand-divider"></div>
+      <div class="brand-module">Управление заказами</div>
+    </div>
+    <div class="hdr-right">
+      <div class="live-badge" :class="{on: connected}">
+        <span class="live-dot"></span>
+        {{ connected ? 'ОНЛАЙН' : 'ОФЛАЙН' }}
+      </div>
+      <div class="hdr-counter">Заказов: <strong>{{ orders.length }}</strong></div>
+      <button @click="openCreate" class="btn btn-primary btn-sm">+ Создать заказ</button>
+      <a href="/logout" class="btn-logout" title="Выйти из системы">
+        <svg viewBox="0 0 20 20" fill="currentColor" width="15" height="15">
+          <path fill-rule="evenodd" d="M3 3a1 1 0 00-1 1v12a1 1 0 102 0V4a1 1 0 00-1-1zm10.293 9.293a1 1 0 001.414 1.414l3-3a1 1 0 000-1.414l-3-3a1 1 0 10-1.414 1.414L14.586 9H7a1 1 0 100 2h7.586l-1.293 1.293z" clip-rule="evenodd"/>
+        </svg>
+        <span>Выйти</span>
+      </a>
+    </div>
+  </header>
+
+  <div class="shell">
+
+    <!-- ═══ SIDEBAR ═══ -->
+    <aside>
+
+      <!-- Category tabs -->
+      <div class="cat-tabs">
+        <button v-for="cat in categories" :key="cat.id"
+          class="cat-tab" :class="{active: filterCategory===cat.id}"
+          @click="filterCategory=cat.id; filterStatus=''">
+          {{ cat.label }}
+          <span class="cnt">{{ cat.count }}</span>
+        </button>
+      </div>
+
+      <!-- Search + filter -->
+      <div class="aside-top">
+        <div class="search-wrap">
+          <span class="search-icon">⌕</span>
+          <input v-model="search" class="inp search-inp" placeholder="Поиск по ID, номеру…">
+        </div>
+        <div class="filter-row">
+          <div class="sel-wrap">
+            <select v-model="filterStatus" class="inp" style="font-size:12px;padding:7px 26px 7px 10px">
+              <option value="">Все статусы</option>
+              <option v-for="s in categoryStatuses" :key="s.id" :value="s.id">{{ s.name }}</option>
+            </select>
+            <span class="sel-arrow">▾</span>
+          </div>
+          <button @click="showGen=!showGen" class="btn-icon" :class="{active:showGen}" title="Генератор заказов">⚡</button>
+        </div>
+      </div>
+
+      <!-- Status chips -->
+      <div class="status-chips" v-if="categoryChips.length">
+        <span v-for="st in categoryChips" :key="st.statusId"
+          class="chip"
+          :style="{background: st.color+'15', color: st.color, borderColor: st.color+'40'}"
+          :class="{'chip-sel': filterStatus===st.statusId}"
+          @click="filterStatus = filterStatus===st.statusId ? '' : st.statusId">
+          {{ st.statusName }} {{ st.count }}
+        </span>
+      </div>
+
+      <!-- Generator -->
+      <transition name="slide">
+        <div v-if="showGen" class="gen-panel">
+          <div class="gen-inner">
+            <div class="gen-label">⚡ Генератор заказов</div>
+            <div class="gen-row">
+              <div class="gen-col">
+                <div class="field-lbl">Количество</div>
+                <input v-model.number="genCount" type="number" min="1" max="100" class="inp"
+                  style="padding:7px 10px;font-size:12px"
+                  @blur="genCount = genCount < 1 ? 1 : genCount > 100 ? 100 : genCount">
+              </div>
+              <div class="gen-col">
+                <div class="field-lbl">Статус</div>
+                <div class="sel-wrap">
+                  <select v-model="genStatus" class="inp" style="padding:7px 26px 7px 10px;font-size:12px">
+                    <option value="">Случайный</option>
+                    <option v-for="s in allStatuses" :key="s.id" :value="s.id">{{ s.short }}</option>
+                  </select>
+                  <span class="sel-arrow">▾</span>
+                </div>
+              </div>
+            </div>
+            <button @click="generate" :disabled="generating" class="btn btn-teal btn-sm" style="width:100%">
+              <span v-if="generating"><span class="ldot"></span><span class="ldot"></span><span class="ldot"></span></span>
+              <span v-else>Сгенерировать</span>
+            </button>
+            <div v-if="genResult" class="gen-result">✓ {{ genResult }}</div>
+            <div v-if="genError" class="gen-error">⚠ {{ genError }}</div>
+          </div>
+        </div>
+      </transition>
+
+      <!-- Order list -->
+      <div class="order-list">
+        <div v-if="!filteredOrders.length" class="no-orders">
+          <span class="no-orders-icon">📋</span>
+          <div style="font-weight:700;color:var(--gray-600);margin-bottom:4px">Заказов не найдено</div>
+          <div v-if="search||filterStatus" style="font-size:12px">Попробуйте изменить фильтры</div>
+        </div>
+        <div v-for="o in filteredOrders" :key="o.id"
+          class="order-row" :class="{sel: selectedId===o.id}"
+          @click="selectOrder(o.id)">
+          <div class="or-top">
+            <span class="or-id">{{ shortId(o.id) }}</span>
+            <span class="or-badge"
+              :style="{background: o.statusColor+'15', color: o.statusColor, borderColor: o.statusColor+'40'}">
+              <span class="or-dot" :style="{background: o.statusColor}"></span>{{ o.statusName }}
+            </span>
+          </div>
+          <div class="or-meta">
+            <span>{{ o.number || '—' }}{{ o.shopId ? ' · ' + o.shopId : '' }}</span>
+            <span class="or-amount">{{ o.totalAmount > 0 ? fmtMoney(o.totalAmount) + ' ₽' : '' }}</span>
+          </div>
+          <div style="display:flex;align-items:center;justify-content:space-between;gap:6px">
+            <span style="font-size:11px;color:var(--gray-400)">{{ fmtDate(o.createdAt) }}</span>
+          </div>
+        </div>
+      </div>
+    </aside>
+
+    <!-- ═══ MAIN ═══ -->
+    <main>
+      <!-- Empty -->
+      <div v-if="!selectedOrder" class="empty-state">
+        <div class="empty-icon">📦</div>
+        <div class="empty-title">Выберите заказ</div>
+        <div class="empty-sub">Кликните по заказу в списке слева</div>
+      </div>
+
+      <!-- Detail -->
+      <div v-else class="detail">
+
+        <!-- Header -->
+        <div class="detail-hdr">
+          <div class="dh-row">
+            <div class="dh-left">
+              <div class="dh-label">ID заказа</div>
+              <div class="dh-id">{{ selectedOrder.id }}</div>
+              <div class="dh-num">{{ selectedOrder.number || 'Номер не указан' }}</div>
+            </div>
+            <div class="dh-right">
+              <span v-if="venueOf(selectedOrder)" class="venue-badge" :class="venueOf(selectedOrder).cls">{{ venueOf(selectedOrder).label }}</span>
+              <span class="sbadge-lg"
+                :style="{background: selectedOrder.statusColor+'12', color: selectedOrder.statusColor, borderColor: selectedOrder.statusColor+'40'}">
+                <span class="dot" :style="{background: selectedOrder.statusColor}"></span>
+                {{ selectedOrder.statusName }}
+              </span>
+              <button @click="openStatusModal" class="btn btn-teal btn-sm">Сменить статус</button>
+            </div>
+          </div>
+
+          <div class="quick-actions">
+            <span class="qa-label">Следующий:</span>
+            <template v-if="isCompleted(selectedOrder.statusId)">
+              <span class="teal-tag">✓ Заказ завершён</span>
+            </template>
+            <template v-else-if="nextStatuses.length">
+              <button v-for="ns in nextStatuses" :key="ns.id"
+                @click="quickStatus(ns.id)" :disabled="saving"
+                class="btn btn-xs"
+                :style="{background: ns.color+'12', borderColor: ns.color+'40', color: ns.color, border:'1.5px solid'}">
+                {{ ns.name }}
+              </button>
+            </template>
+            <span v-else style="font-size:12px;color:var(--gray-400)">Нет доступных переходов</span>
+          </div>
+        </div>
+
+        <!-- Meta grid -->
+        <div class="meta-grid">
+          <div class="meta-item">
+            <div class="meta-lbl">Магазин</div>
+            <div class="meta-val">{{ selectedOrder.shopId || '—' }}</div>
+          </div>
+          <div class="meta-item">
+            <div class="meta-lbl">Оплата</div>
+            <div class="meta-val">{{ selectedOrder.paymentTypeId || '—' }}</div>
+          </div>
+          <div class="meta-item">
+            <div class="meta-lbl">Валюта</div>
+            <div class="meta-val">{{ selectedOrder.currencyCode || 'RUB' }}</div>
+          </div>
+          <div class="meta-item">
+            <div class="meta-lbl">Создан</div>
+            <div class="meta-val">{{ fmtDateTime(selectedOrder.createdAt) }}</div>
+          </div>
+          <div v-if="selectedOrder.specCount" class="meta-item">
+            <div class="meta-lbl">Позиций</div>
+            <div class="meta-val">{{ selectedOrder.specCount }}</div>
+          </div>
+          <div v-if="selectedOrder.totalAmount > 0" class="meta-item">
+            <div class="meta-lbl">Сумма</div>
+            <div class="meta-val" style="color:var(--teal3);font-weight:700">{{ fmtMoney(selectedOrder.totalAmount) }} ₽</div>
+          </div>
+          <div v-if="selectedOrder.planning?.plannedDate" class="meta-item">
+            <div class="meta-lbl" style="color:var(--green)">Плановая дата</div>
+            <div class="meta-val" style="color:var(--green);font-weight:600">{{ selectedOrder.planning.plannedDate }}</div>
+          </div>
+          <div v-if="selectedOrder.planning?.manufactureDate" class="meta-item">
+            <div class="meta-lbl" style="color:var(--orange)">Дата производства</div>
+            <div class="meta-val" style="color:var(--orange)">{{ selectedOrder.planning.manufactureDate }}</div>
+          </div>
+          <div v-if="selectedOrder.comment" class="meta-item">
+            <div class="meta-lbl">Комментарий</div>
+            <div class="meta-val" style="color:var(--gray-600)">{{ selectedOrder.comment }}</div>
+          </div>
+          <div v-if="venueOf(selectedOrder)" class="meta-item">
+            <div class="meta-lbl">Площадка</div>
+            <div class="meta-val" style="margin-top:2px">
+              <span class="venue-badge" :class="venueOf(selectedOrder).cls">{{ venueOf(selectedOrder).label }}</span>
+            </div>
+          </div>
+        </div>
+
+        <!-- Tabs -->
+        <div class="tabs-wrap">
+          <button v-for="t in tabs" :key="t.id"
+            class="tab-btn" :class="{active: activeTab===t.id}"
+            @click="activeTab=t.id">{{ t.label }}</button>
+        </div>
+
+        <!-- Specs -->
+        <div v-if="activeTab==='specs'" class="card">
+          <div v-if="!selectedOrder.specification?.length" class="empty-tab">Нет позиций заказа</div>
+          <table v-else class="card-table">
+            <thead>
+              <tr>
+                <th>#</th>
+                <th>Номенклатура</th>
+                <th class="td-right">Кол-во</th>
+                <th class="td-right">Цена</th>
+                <th class="td-right">Сумма</th>
+                <th>Статус строки</th>
+                <th v-if="selectedOrder.planning?.manufactureDate">Дата пр-ва</th>
+                <th v-if="selectedOrder.planning?.plannedDate">Плановая</th>
+              </tr>
+            </thead>
+            <tbody>
+              <tr v-for="s in selectedOrder.specification" :key="s.id">
+                <td class="td-mono" style="color:var(--gray-400);width:36px">{{ s.itemNumber }}</td>
+                <td class="td-mono" style="color:var(--gray-600)">
+                  {{ s.nomenclatureId?.slice(0,14) }}…
+                  <span v-if="s.isService" class="teal-tag" style="margin-left:6px;font-size:9px;vertical-align:middle">Услуга</span>
+                </td>
+                <td class="td-mono td-right">{{ fmtNum(s.quantity) }}</td>
+                <td class="td-mono td-right">{{ fmtMoney(s.price) }}</td>
+                <td class="td-mono td-right" style="color:var(--teal3);font-weight:700">{{ fmtMoney(s.totalAmount) }}</td>
+                <td style="min-width:180px">
+                  <div class="sel-wrap">
+                    <select :value="s.statusId||''" @change="updateSpecStatus(s,$event.target.value)"
+                      class="spec-status-sel"
+                      :style="s.statusId ? {background:lsColor(s.statusId)+'14',color:lsColor(s.statusId),borderColor:lsColor(s.statusId)+'40'} : {}">
+                      <option value="">—</option>
+                      <option v-for="ls in lineStatuses" :key="ls.id" :value="ls.id">{{ ls.short }} · {{ ls.name }}</option>
+                    </select>
+                  </div>
+                </td>
+                <td v-if="selectedOrder.planning?.manufactureDate" class="td-mono" style="color:var(--orange)">{{ s.planning?.manufactureDateFact || '—' }}</td>
+                <td v-if="selectedOrder.planning?.plannedDate" class="td-mono" style="color:var(--green)">{{ s.planning?.plannedDate || '—' }}</td>
+              </tr>
+            </tbody>
+            <tfoot>
+              <tr>
+                <td colspan="4" class="td-right" style="color:var(--gray-400);font-size:11px;font-weight:400">ИТОГО</td>
+                <td class="td-mono td-right" style="color:var(--teal3)">{{ fmtMoney(totalSpec) }} ₽</td>
+                <td :colspan="(selectedOrder.planning?.manufactureDate?1:0)+(selectedOrder.planning?.plannedDate?1:0)+1"></td>
+              </tr>
+            </tfoot>
+          </table>
+        </div>
+
+        <!-- Delivery -->
+        <div v-if="activeTab==='delivery'" class="info-card">
+          <div v-if="!selectedOrder.delivery && !selectedOrder.address" class="empty-tab" style="padding:20px 0">Нет данных о доставке</div>
+          <template v-if="selectedOrder.delivery">
+            <div class="info-section-lbl">Доставка</div>
+            <div class="info-grid">
+              <div class="meta-item"><div class="meta-lbl">Дата</div><div class="meta-val">{{ selectedOrder.delivery.plannedDate || '—' }}</div></div>
+              <div class="meta-item"><div class="meta-lbl">Время</div><div class="meta-val">{{ selectedOrder.delivery.plannedTimeBegin || '—' }}–{{ selectedOrder.delivery.plannedTimeEnd || '—' }}</div></div>
+              <div class="meta-item"><div class="meta-lbl">Город</div><div class="meta-val">{{ selectedOrder.delivery.cityId || '—' }}</div></div>
+              <div class="meta-item"><div class="meta-lbl">Трек</div><div class="meta-val">{{ selectedOrder.delivery.courierTrackNumber || '—' }}</div></div>
+              <div v-if="selectedOrder.delivery.comment" class="meta-item"><div class="meta-lbl">Комментарий</div><div class="meta-val">{{ selectedOrder.delivery.comment }}</div></div>
+            </div>
+          </template>
+          <template v-if="selectedOrder.address">
+            <div class="info-section-lbl" style="margin-top:16px">Адрес доставки</div>
+            <div class="info-grid">
+              <div class="meta-item"><div class="meta-lbl">КЛАДР</div><div class="meta-val">{{ selectedOrder.address.streetKLADR || '—' }}</div></div>
+              <div class="meta-item"><div class="meta-lbl">Дом</div><div class="meta-val">{{ selectedOrder.address.houseNumber || '—' }}</div></div>
+              <div class="meta-item"><div class="meta-lbl">Индекс</div><div class="meta-val">{{ selectedOrder.address.postalCode || '—' }}</div></div>
+              <div v-if="selectedOrder.address.latitude" class="meta-item"><div class="meta-lbl">Координаты</div><div class="meta-val">{{ selectedOrder.address.latitude }}, {{ selectedOrder.address.longitude }}</div></div>
+            </div>
+          </template>
+        </div>
+
+        <!-- History -->
+        <div v-if="activeTab==='history'" class="card">
+          <div v-if="!selectedOrder.statusHistory?.length" class="empty-tab">История изменений пуста</div>
+          <div v-else>
+            <div v-for="h in histWithDuration" :key="h.id" class="hist-row">
+              <span class="hist-dot" :style="{background: sColor(h.newStatusId)||'var(--gray-300)'}"></span>
+              <span class="hist-from">{{ sName(h.oldStatusId) }}</span>
+              <span class="hist-arrow">→</span>
+              <span class="hist-to">{{ sName(h.newStatusId) }}</span>
+              <span class="hist-spacer"></span>
+              <span class="hist-dur" v-if="h.duration">{{ h.duration }}</span>
+              <span class="hist-ts">{{ fmtDateTime(h.changeDate) }}</span>
+            </div>
+          </div>
+        </div>
+
+        <!-- Info -->
+        <div v-if="activeTab==='info'" class="info-card">
+          <div class="info-grid">
+            <div v-if="selectedOrder.organization?.clientId" class="meta-item" style="grid-column:span 2">
+              <div class="meta-lbl">Client ID</div>
+              <div class="meta-val">{{ selectedOrder.organization.clientId }}</div>
+            </div>
+            <div v-if="selectedOrder.managerId" class="meta-item" style="grid-column:span 2">
+              <div class="meta-lbl">Manager ID</div>
+              <div class="meta-val">{{ selectedOrder.managerId }}</div>
+            </div>
+            <div class="meta-item">
+              <div class="meta-lbl">НДС</div>
+              <div class="meta-val">{{ selectedOrder.isTaxIncluded ? 'Включён' : 'Нет' }}</div>
+            </div>
+            <div class="meta-item">
+              <div class="meta-lbl">Источник</div>
+              <div class="meta-val">{{ selectedOrder.sourceId || '—' }}</div>
+            </div>
+            <div v-if="selectedOrder.contractId" class="meta-item" style="grid-column:span 2">
+              <div class="meta-lbl">Договор</div>
+              <div class="meta-val">{{ selectedOrder.contractId }}</div>
+            </div>
+          </div>
+          <template v-if="selectedOrder.coupon?.length">
+            <div class="info-section-lbl" style="margin-top:12px">Купоны</div>
+            <div style="display:flex;flex-wrap:wrap;gap:6px">
+              <span v-for="c in selectedOrder.coupon" :key="c.number" class="teal-tag">{{ c.number }}</span>
+            </div>
+          </template>
+        </div>
+
+      </div>
+    </main>
+  </div>
+
+  <!-- ═══ STATUS MODAL ═══ -->
+  <transition name="fade">
+    <div v-if="showModal" class="overlay" @click.self="showModal=false">
+      <div class="modal">
+        <div class="modal-title">Смена статуса</div>
+        <div class="modal-subtitle">{{ selectedOrder?.id?.slice(0,20) }}…</div>
+        <div class="modal-cur">Текущий: <strong>{{ selectedOrder?.statusName }}</strong></div>
+        <div class="form-row">
+          <label class="form-lbl">Новый статус <span style="color:var(--red)">*</span></label>
+          <div class="sel-wrap">
+            <select v-model="newStatusId" class="inp" :class="{error: modalSubmitted && !newStatusId}">
+              <option value="">— выберите статус —</option>
+              <optgroup v-for="(grp,name) in groupedStatuses" :key="name" :label="name">
+                <option v-for="s in grp" :key="s.id" :value="s.id">{{ s.name }}</option>
+              </optgroup>
+            </select>
+            <span class="sel-arrow">▾</span>
+          </div>
+          <div v-if="modalSubmitted && !newStatusId" class="form-error">Выберите новый статус</div>
+        </div>
+        <div v-if="venueConflict" class="venue-warn">
+          <span>⚠</span>
+          <div>
+            <strong>Смена производственной площадки</strong><br>
+            Текущая: <b>{{ venueOf(selectedOrder)?.label }}</b> → новая: <b>{{ venueConflict }}</b>.<br>
+            Строки заказа будут переведены на статусы новой площадки.
+          </div>
+        </div>
+        <div class="form-row">
+          <label class="form-lbl">Комментарий</label>
+          <input v-model="statusComment" class="inp" placeholder="Причина изменения…" maxlength="500">
+          <div class="form-hint">Необязательное поле, до 500 символов</div>
+        </div>
+        <div class="modal-actions">
+          <button @click="showModal=false; modalSubmitted=false" class="btn btn-outline btn-sm">Отмена</button>
+          <button @click="updateStatus" :disabled="saving" class="btn btn-teal btn-sm">
+            <span v-if="saving"><span class="ldot"></span><span class="ldot"></span><span class="ldot"></span></span>
+            <span v-else>Применить</span>
+          </button>
+        </div>
+      </div>
+    </div>
+  </transition>
+
+  <!-- ═══ CREATE MODAL ═══ -->
+  <transition name="fade">
+    <div v-if="showCreate" class="overlay" @click.self="confirmCloseCreate">
+      <div class="create-modal">
+        <div class="cm-head">
+          <span class="cm-title">Создать заказ</span>
+          <button class="cm-close" @click="confirmCloseCreate">✕</button>
+        </div>
+        <div class="cm-body">
+
+          <!-- Auto-fill -->
+          <div style="display:flex;gap:10px;align-items:center;flex-wrap:wrap">
+            <button @click="generateDraft" :disabled="draftLoading" class="btn btn-teal btn-sm">
+              <span v-if="draftLoading"><span class="ldot"></span><span class="ldot"></span><span class="ldot"></span></span>
+              <span v-else>⚡ Заполнить автоматически</span>
+            </button>
+            <div class="sel-wrap" style="flex:0 0 180px">
+              <select v-model="draftStatus" class="inp" style="padding:7px 26px 7px 10px;font-size:12px">
+                <option value="">Случайный статус</option>
+                <option v-for="s in allStatuses" :key="s.id" :value="s.id">{{ s.short }} · {{ s.name }}</option>
+              </select>
+              <span class="sel-arrow">▾</span>
+            </div>
+          </div>
+
+          <!-- Header fields -->
+          <div>
+            <div class="cm-section">Заголовок заказа</div>
+            <div class="section-block">
+              <div class="cm-grid">
+                <div class="cm-field">
+                  <label class="cm-lbl">Номер</label>
+                  <input v-model="draft.number" class="cm-input" placeholder="АС-XXXXXX" maxlength="50">
+                </div>
+                <div class="cm-field">
+                  <label class="cm-lbl">Магазин ID <span class="req">*</span></label>
+                  <input v-model="draft.shopId" class="cm-input" :class="{error: createSubmitted && !draft.shopId?.trim()}" placeholder="MSK-001" maxlength="20">
+                  <div v-if="createSubmitted && !draft.shopId?.trim()" class="cm-field-error">Обязательное поле</div>
+                </div>
+                <div class="cm-field">
+                  <label class="cm-lbl">Статус заказа</label>
+                  <select :value="draft.statusId" @change="onDraftOrderStatusChange($event.target.value)" class="cm-input" style="font-size:12px">
+                    <option value="">—</option>
+                    <option v-for="s in allStatuses" :key="s.id" :value="s.id">{{ s.short }} · {{ s.name }}</option>
+                  </select>
+                </div>
+                <div class="cm-field">
+                  <label class="cm-lbl">Менеджер ID <span class="req">*</span></label>
+                  <input v-model="draft.managerId" class="cm-input" :class="{error: createSubmitted && !draft.managerId?.trim()}" maxlength="100">
+                  <div v-if="createSubmitted && !draft.managerId?.trim()" class="cm-field-error">Обязательное поле</div>
+                </div>
+                <div class="cm-field">
+                  <label class="cm-lbl">Оплата</label>
+                  <input v-model="draft.paymentTypeId" class="cm-input" placeholder="CARD" maxlength="20">
+                </div>
+                <div class="cm-field">
+                  <label class="cm-lbl">Клиент ID</label>
+                  <input v-model="draftClientId" class="cm-input" placeholder="UUID клиента" maxlength="100">
+                </div>
+              </div>
+              <div class="cm-field" style="margin-top:10px">
+                <label class="cm-lbl">Комментарий</label>
+                <input v-model="draft.comment" class="cm-input" placeholder="Необязательный комментарий…" maxlength="500">
+              </div>
+            </div>
+          </div>
+
+          <!-- Specs -->
+          <div>
+            <div class="cm-section-row">
+              <div class="cm-section" style="margin-bottom:0">Позиции заказа</div>
+              <button @click="addSpec" class="btn btn-outline btn-sm" style="font-size:12px">+ Добавить</button>
+            </div>
+            <div class="section-block" style="margin-top:10px">
+              <div v-if="!draft.specification || !draft.specification.length" style="color:var(--gray-400);font-size:13px;padding:4px 0">
+                Нет позиций — добавьте вручную или нажмите «Заполнить автоматически»
+              </div>
+              <template v-else>
+                <div class="spec-hdr">
+                  <span>Номенклатура ID</span><span>Кол-во</span><span>Цена, ₽</span><span>Статус строки</span><span></span>
+                </div>
+                <div v-for="(sp,i) in draft.specification" :key="i" class="spec-row">
+                  <input v-model="sp.nomenclatureId" class="cm-input" placeholder="UUID товара" maxlength="100">
+                  <input v-model.number="sp.quantity" type="number" min="1" max="9999" class="cm-input"
+                    :class="{error: createSubmitted && (sp.quantity < 1 || !Number.isInteger(sp.quantity))}"
+                    @blur="sp.quantity = (!sp.quantity || sp.quantity < 1) ? 1 : sp.quantity">
+                  <input v-model.number="sp.price" type="number" min="0" step="0.01" class="cm-input"
+                    :class="{error: createSubmitted && sp.price < 0}"
+                    @blur="sp.price = sp.price < 0 ? 0 : sp.price">
+                  <div class="sel-wrap">
+                    <select :value="sp.statusId" @change="onDraftSpecStatusChange(sp,$event.target.value)" class="cm-input" style="font-size:12px;padding:7px 26px 7px 9px">
+                      <option value="">—</option>
+                      <option v-for="ls in lineStatuses" :key="ls.id" :value="ls.id">{{ ls.short }} · {{ ls.name }}</option>
+                    </select>
+                  </div>
+                  <button @click="removeSpec(i)" class="spec-del" title="Удалить позицию">✕</button>
+                </div>
+              </template>
+            </div>
+          </div>
+
+        </div>
+        <div class="cm-foot">
+          <span v-if="createSubmitted && !isCreateValid" style="font-size:12px;color:var(--red);font-weight:700;margin-right:auto">
+            ⚠ Заполните обязательные поля
+          </span>
+          <button @click="confirmCloseCreate" class="btn btn-outline btn-sm">Отмена</button>
+          <button @click="submitCreate" :disabled="createSaving" class="btn btn-teal btn-sm">
+            <span v-if="createSaving"><span class="ldot"></span><span class="ldot"></span><span class="ldot"></span></span>
+            <span v-else>✓ Создать заказ</span>
+          </button>
+        </div>
+      </div>
+    </div>
+  </transition>
+
+  <!-- ═══ CONFIRM ═══ -->
+  <transition name="fade">
+    <div v-if="showConfirm" class="overlay" @click.self="showConfirm=false">
+      <div class="confirm-modal">
+        <div class="confirm-icon">⚠️</div>
+        <div class="confirm-title">{{ confirmData.title }}</div>
+        <div class="confirm-msg">{{ confirmData.message }}</div>
+        <div style="display:flex;gap:10px;justify-content:flex-end">
+          <button @click="showConfirm=false" class="btn btn-outline btn-sm">Отмена</button>
+          <button @click="confirmData.onConfirm(); showConfirm=false" class="btn btn-danger btn-sm">{{ confirmData.ok }}</button>
+        </div>
+      </div>
+    </div>
+  </transition>
+
+  <!-- ═══ TOAST ═══ -->
+  <transition name="fade">
+    <div v-if="toast" class="toast" :class="`toast-${toast.type}`">{{ toast.msg }}</div>
+  </transition>
+
+</div>
+
+<script>
+// Глобальный перехват 401 — перенаправление на страницу входа
+const _origFetch = window.fetch;
+window.fetch = async (...args) => {
+  const r = await _origFetch(...args);
+  if (r.status === 401) { window.location.href = '/login'; }
+  return r;
+};
+
+// ── Status sync logic (order ↔ line) ────────────────────────────────────────
+const _LS={ATTENTION:'80010000000020AE',NO_FABRIC:'80010000000020A4',CANCELLED:'8010000000000108',DONE:'8001000000000118',SHIPPED:'8001000000000154',STORAGE:'8001000000000122',RETAIL_PT:'80010000000020B5',MOVING_TO_RP:'80010000000020B4',REG_WH:'80010000000020B3',TRANSIT:'C0008686474408E6',EN_ROUTE:'800100000000195B',CENTRAL_WH:'80010000000020A9',MOVING_RS:'80010000000034F4',RS:'80010000000034F5',SUPPLY:'8001000000000121',PLANNING:'800100000000011F',PROCESSING:'8001000000001500',EXECUTABLE:'C0008686474408E5',DRAFT:'C0003089DD24DC9A'};
+const _OS={ATTENTION:'80010000000020AE',NO_FABRIC:'80010000000020A4',CANCELLED:'8010000000000108',DONE:'8001000000000118',SHIPPED:'8001000000000154',STORAGE:'8001000000000122',RETAIL_PT:'80010000000020B5',MOVING_TO_RP:'80010000000020B4',REG_WH:'80010000000020B3',TRANSIT:'8001000000003E0E',EN_ROUTE:'800100000000195B',SUPPLY:'8001000000000121',PLAN_K:'800100000000011F',PLAN_N:'8001000000000120',PROC_K:'8001000000001500',PROC_N:'8001000000001501',EXECUTABLE:'C0008686474408E5'};
+// Каскадный аккумулятор: каждый следующий набор расширяет предыдущий.
+// Порядок строго от самого узкого к самому широкому — первый совпавший выигрывает.
+// «Все строки заказа входят в allowed» → возвращаем статус заказа r.
+const _SETS=[
+  // 0  Отменён
+  {a:new Set([_LS.CANCELLED]),r:_OS.CANCELLED},
+  // 1  Выполнен
+  {a:new Set([_LS.CANCELLED,_LS.DONE]),r:_OS.DONE},
+  // 2  Отгружен
+  {a:new Set([_LS.CANCELLED,_LS.DONE,_LS.SHIPPED]),r:_OS.SHIPPED},
+  // 3  Хранение (строки только Хранение + уже закрытые)
+  {a:new Set([_LS.CANCELLED,_LS.DONE,_LS.SHIPPED,_LS.STORAGE]),r:_OS.STORAGE},
+  // 4  Торговая точка (ТТ)
+  {a:new Set([_LS.CANCELLED,_LS.DONE,_LS.SHIPPED,_LS.STORAGE,_LS.RETAIL_PT]),r:_OS.RETAIL_PT},
+  // 5  Перемещение на ТТ
+  {a:new Set([_LS.CANCELLED,_LS.DONE,_LS.SHIPPED,_LS.STORAGE,_LS.RETAIL_PT,_LS.MOVING_TO_RP]),r:_OS.MOVING_TO_RP},
+  // 6  Региональный склад
+  {a:new Set([_LS.CANCELLED,_LS.DONE,_LS.SHIPPED,_LS.STORAGE,_LS.RETAIL_PT,_LS.MOVING_TO_RP,_LS.REG_WH]),r:_OS.REG_WH},
+  // 7  Транзит
+  {a:new Set([_LS.CANCELLED,_LS.DONE,_LS.SHIPPED,_LS.STORAGE,_LS.RETAIL_PT,_LS.MOVING_TO_RP,_LS.REG_WH,_LS.TRANSIT]),r:_OS.TRANSIT},
+  // 8  В пути
+  {a:new Set([_LS.CANCELLED,_LS.DONE,_LS.SHIPPED,_LS.STORAGE,_LS.RETAIL_PT,_LS.MOVING_TO_RP,_LS.REG_WH,_LS.TRANSIT,_LS.EN_ROUTE]),r:_OS.EN_ROUTE},
+  // 9  Поставка (+ логистические доноры)
+  {a:new Set([_LS.CANCELLED,_LS.DONE,_LS.SHIPPED,_LS.STORAGE,_LS.RETAIL_PT,_LS.MOVING_TO_RP,_LS.REG_WH,_LS.TRANSIT,_LS.EN_ROUTE,_LS.CENTRAL_WH,_LS.MOVING_RS,_LS.RS,_LS.SUPPLY]),r:_OS.SUPPLY},
+  // 10 Планирование (Ковров или Новосибирск)
+  {a:new Set([_LS.CANCELLED,_LS.DONE,_LS.SHIPPED,_LS.STORAGE,_LS.RETAIL_PT,_LS.MOVING_TO_RP,_LS.REG_WH,_LS.TRANSIT,_LS.EN_ROUTE,_LS.CENTRAL_WH,_LS.MOVING_RS,_LS.RS,_LS.SUPPLY,_LS.PLANNING]),r:'PLAN'},
+  // 11 Обрабатывается (Ковров или Новосибирск)
+  {a:new Set([_LS.CANCELLED,_LS.DONE,_LS.SHIPPED,_LS.STORAGE,_LS.RETAIL_PT,_LS.MOVING_TO_RP,_LS.REG_WH,_LS.TRANSIT,_LS.EN_ROUTE,_LS.CENTRAL_WH,_LS.MOVING_RS,_LS.RS,_LS.SUPPLY,_LS.PLANNING,_LS.PROCESSING]),r:'PROC'},
+  // 12 Исполняемый (самый широкий рабочий набор)
+  {a:new Set([_LS.CANCELLED,_LS.DONE,_LS.SHIPPED,_LS.STORAGE,_LS.RETAIL_PT,_LS.MOVING_TO_RP,_LS.REG_WH,_LS.TRANSIT,_LS.EN_ROUTE,_LS.CENTRAL_WH,_LS.MOVING_RS,_LS.RS,_LS.SUPPLY,_LS.PLANNING,_LS.PROCESSING,_LS.EXECUTABLE]),r:_OS.EXECUTABLE},
+  // 13 Оформляемый (черновик, все строки в DRAFT или EXECUTABLE)
+  {a:new Set([_LS.CANCELLED,_LS.DONE,_LS.SHIPPED,_LS.STORAGE,_LS.RETAIL_PT,_LS.MOVING_TO_RP,_LS.REG_WH,_LS.TRANSIT,_LS.EN_ROUTE,_LS.CENTRAL_WH,_LS.MOVING_RS,_LS.RS,_LS.SUPPLY,_LS.PLANNING,_LS.PROCESSING,_LS.EXECUTABLE,_LS.DRAFT]),r:'DRAFT'},
+];
+const _rA=s=>Array.from(s);
+// _PROC_A = set для "Обрабатывается" (индекс 11 после добавления STORAGE/EXECUTABLE/DRAFT)
+const _PROC_A=_rA(_SETS[11].a);
+const _RANGES={
+  [_OS.ATTENTION]    :{a:[..._PROC_A,_LS.ATTENTION],d:[_LS.ATTENTION]},
+  [_OS.NO_FABRIC]    :{a:[..._PROC_A,_LS.NO_FABRIC],d:[_LS.NO_FABRIC]},
+  [_OS.CANCELLED]    :{a:_rA(_SETS[0].a),d:[_LS.CANCELLED]},
+  [_OS.DONE]         :{a:_rA(_SETS[1].a),d:[_LS.DONE]},
+  [_OS.SHIPPED]      :{a:_rA(_SETS[2].a),d:[_LS.SHIPPED]},
+  [_OS.STORAGE]      :{a:_rA(_SETS[3].a),d:[_LS.STORAGE]},
+  [_OS.RETAIL_PT]    :{a:_rA(_SETS[4].a),d:[_LS.STORAGE,_LS.RETAIL_PT]},
+  [_OS.MOVING_TO_RP] :{a:_rA(_SETS[5].a),d:[_LS.MOVING_TO_RP]},
+  [_OS.REG_WH]       :{a:_rA(_SETS[6].a),d:[_LS.REG_WH]},
+  [_OS.TRANSIT]      :{a:_rA(_SETS[7].a),d:[_LS.TRANSIT]},
+  [_OS.EN_ROUTE]     :{a:_rA(_SETS[8].a),d:[_LS.EN_ROUTE]},
+  [_OS.SUPPLY]       :{a:_rA(_SETS[9].a),d:[_LS.CENTRAL_WH,_LS.MOVING_RS,_LS.RS,_LS.SUPPLY]},
+  [_OS.PLAN_K]       :{a:_rA(_SETS[10].a),d:[_LS.PLANNING]},
+  [_OS.PLAN_N]       :{a:_rA(_SETS[10].a),d:[_LS.PLANNING]},
+  [_OS.PROC_K]       :{a:_rA(_SETS[11].a),d:[_LS.PROCESSING]},
+  [_OS.PROC_N]       :{a:_rA(_SETS[11].a),d:[_LS.PROCESSING]},
+  'C0003089DD24DC9A' :{a:['C0003089DD24DC9A'],d:['C0003089DD24DC9A']},
+  'C0008686474408E5' :{a:['C0003089DD24DC9A','C0008686474408E5'],d:['C0008686474408E5']},
+  '8001000000001523' :{a:_rA(_SETS[11].a),d:[_LS.PLANNING]},
+  '8001000000001564' :{a:_rA(_SETS[11].a),d:[_LS.PLANNING]},
+  '80010000000020A9' :{a:_rA(_SETS[9].a),d:[_LS.CENTRAL_WH]},
+  '80010000000034F4' :{a:_rA(_SETS[9].a),d:[_LS.MOVING_RS]},
+  '80010000000034F5' :{a:_rA(_SETS[9].a),d:[_LS.RS]},
+  '8001000000000122' :{a:_rA(_SETS[4].a),d:[_LS.STORAGE]},
+};
+function _lineRangeFor(id){return _RANGES[id]||{a:[_LS.DONE,_LS.CANCELLED],d:[_LS.DONE]};}
+function _rand(arr){return arr[Math.floor(Math.random()*arr.length)];}
+function _subsetOf(s,of){for(const v of s)if(!of.has(v))return false;return true;}
+function deriveOrderStatus(specs,preferKovrov=true){
+  const s=new Set(specs.map(sp=>sp.statusId).filter(Boolean));
+  if(!s.size)return null;
+  // ШАГ 2: абсолютные приоритеты
+  if(s.has(_LS.ATTENTION))return _OS.ATTENTION;
+  if(s.has(_LS.NO_FABRIC))return _OS.NO_FABRIC;
+  // ШАГ 3: каскадный аккумулятор
+  for(const{a,r}of _SETS){
+    if(_subsetOf(s,a)){
+      if(r==='PLAN') return preferKovrov?_OS.PLAN_K:_OS.PLAN_N;
+      if(r==='PROC') return preferKovrov?_OS.PROC_K:_OS.PROC_N;
+      if(r==='DRAFT') return _LS.DRAFT; // C0003089DD24DC9A
+      return r;
+    }
+  }
+  // ШАГ 4: fallback
+  const hp=s.has(_LS.PLANNING),hs=s.has(_LS.SUPPLY);
+  if(!hp&&!hs)return null;
+  if(!hp)return _OS.SUPPLY;
+  return null;
+}
+const _O2L={'8001000000003E0E':'C0008686474408E6','8001000000001501':'8001000000001500','8001000000000120':'800100000000011F'};
+function orderToLineStatus(id){return _O2L[id]||id;}
+// ─────────────────────────────────────────────────────────────────────────────
+
+const {createApp,ref,computed,onMounted,onUnmounted}=Vue;
+createApp({setup(){
+  const orders=ref([]),allStatuses=ref([]),lineStatuses=ref([]),
+        stats=ref({total:0,byStatus:[]}),
+        search=ref(''),filterStatus=ref(''),filterCategory=ref(''),
+        selectedId=ref(null),activeTab=ref('specs'),
+        connected=ref(false),
+        showModal=ref(false),modalSubmitted=ref(false),
+        newStatusId=ref(''),statusComment=ref(''),saving=ref(false),
+        showGen=ref(false),genCount=ref(5),genStatus=ref(''),
+        generating=ref(false),genResult=ref(''),genError=ref(''),
+        toast=ref(null),
+        showCreate=ref(false),createSubmitted=ref(false),
+        draft=ref({specification:[]}),draftClientId=ref(''),
+        draftStatus=ref(''),draftLoading=ref(false),createSaving=ref(false),
+        showConfirm=ref(false),confirmData=ref({title:'',message:'',ok:'Подтвердить',onConfirm:()=>{}});
+
+  const tabs=[
+    {id:'specs',label:'Позиции'},
+    {id:'delivery',label:'Доставка'},
+    {id:'history',label:'История'},
+    {id:'info',label:'Реквизиты'},
+  ];
+
+  const COMPLETED=new Set(['8001000000000118','8010000000000108']);
+  const isCompleted=id=>COMPLETED.has(id);
+
+  const STATUS_TRANSITIONS={
+    'C0003089DD24DC9A': ['C0008686474408E5','8010000000000108'],
+    'C0008686474408E5': ['8001000000001500','8001000000001501','80010000000020A4','8001000000001523','8001000000001564','8010000000000108'],
+    '80010000000020A4': ['8001000000001500','8001000000001501','80010000000020B3','80010000000034F5','80010000000020B5','8010000000000108'],
+    '8001000000001523': ['8001000000001500','8001000000001501','80010000000020B3','80010000000034F5','80010000000020B5','8010000000000108'],
+    '80010000000020AE': ['8001000000001500','8001000000001501','80010000000020B3','80010000000034F5','80010000000020B5','8010000000000108'],
+    '8001000000001564': ['8001000000001500','8001000000001501','80010000000020B3','80010000000034F5','80010000000020B5','8010000000000108'],
+    '8001000000001500': ['800100000000011F','8001000000001523','8010000000000108'],
+    '8001000000001501': ['8001000000000120','8001000000001523','8010000000000108'],
+    '800100000000011F': ['8001000000000121','80010000000020AE','8010000000000108'],
+    '8001000000000120': ['8001000000000121','80010000000020AE','8010000000000108'],
+    '8001000000000121': ['800100000000195B','8010000000000108'],
+    '800100000000195B': ['80010000000020B5','80010000000034F5','80010000000020B3','80010000000020A9','8010000000000108'],
+    '80010000000020A9': ['80010000000034F4','80010000000034F5','80010000000020B3','8001000000003E0E','8010000000000108'],
+    '80010000000034F4': ['80010000000034F5','80010000000020B3','8010000000000108'],
+    '80010000000034F5': ['80010000000020B3','80010000000020B4','8001000000000122','8010000000000108'],
+    '80010000000020B3': ['80010000000020B4','80010000000020B5','8001000000000122','8010000000000108'],
+    '8001000000003E0E': ['80010000000020B3','80010000000020B4','8010000000000108'],
+    '80010000000020B4': ['80010000000020B5','8001000000000122','8010000000000108'],
+    '80010000000020B5': ['8001000000000122','8001000000000154','8010000000000108'],
+    '80010000000052A0': ['80010000000020B3','80010000000020B5','8001000000000122','8010000000000108'],
+    '8001000000000122': ['8001000000000118','8001000000000154','8010000000000108'],
+    '8001000000000154': ['8001000000000118','8010000000000108'],
+  };
+
+  const statusMap=computed(()=>{const m={};for(const s of allStatuses.value)m[s.id]=s;return m;});
+  const groupedStatuses=computed(()=>{const g={};for(const s of allStatuses.value){if(!g[s.group])g[s.group]=[];g[s.group].push(s);}return g;});
+  const categoryStatuses=computed(()=>{
+    if(filterCategory.value==='completed')return allStatuses.value.filter(s=>COMPLETED.has(s.id));
+    if(filterCategory.value==='active')return allStatuses.value.filter(s=>!COMPLETED.has(s.id));
+    return allStatuses.value;
+  });
+  const categoryChips=computed(()=>{
+    const byStatus=stats.value.byStatus||[];
+    if(!byStatus.length)return[];
+    let chips=byStatus;
+    if(filterCategory.value==='completed')chips=byStatus.filter(s=>COMPLETED.has(s.statusId));
+    else if(filterCategory.value==='active')chips=byStatus.filter(s=>!COMPLETED.has(s.statusId));
+    return chips.slice(0,10);
+  });
+  const categories=computed(()=>{
+    const all=orders.value;
+    const cmp=all.filter(o=>COMPLETED.has(o.statusId)).length;
+    const act=all.filter(o=>!COMPLETED.has(o.statusId)).length;
+    return[
+      {id:'',label:'Все',count:all.length},
+      {id:'active',label:'Незаверш.',count:act},
+      {id:'completed',label:'Завершён.',count:cmp},
+    ];
+  });
+  const filteredOrders=computed(()=>{
+    let l=orders.value;
+    if(filterCategory.value==='completed')l=l.filter(o=>COMPLETED.has(o.statusId));
+    else if(filterCategory.value==='active')l=l.filter(o=>!COMPLETED.has(o.statusId));
+    if(filterStatus.value)l=l.filter(o=>o.statusId===filterStatus.value);
+    if(search.value){
+      const q=search.value.toLowerCase();
+      l=l.filter(o=>(o.id||'').toLowerCase().includes(q)||(o.number||'').toLowerCase().includes(q));
+    }
+    return l.sort((a,b)=>new Date(b.createdAt)-new Date(a.createdAt));
+  });
+  const selectedOrder=computed(()=>selectedId.value ? orders.value.find(o=>o.id===selectedId.value)||null : null);
+  const totalSpec=computed(()=>selectedOrder.value?.specification?.reduce((s,sp)=>s+(sp.totalAmount||0),0)||0);
+  const nextStatuses=computed(()=>{
+    const cur=selectedOrder.value?.statusId;
+    if(!cur||isCompleted(cur))return[];
+    const ids=STATUS_TRANSITIONS[cur]||['8001000000000118','8010000000000108'];
+    return ids.map(id=>statusMap.value[id]).filter(Boolean);
+  });
+  const lineStatusMap=computed(()=>{const m={};for(const s of lineStatuses.value)m[s.id]=s;return m;});
+  const lsColor=id=>lineStatusMap.value[id]?.color||'var(--gray-400)';
+  const isCreateValid=computed(()=>!!(draft.value.shopId?.trim()&&draft.value.managerId?.trim()));
+
+  // Предупреждение о смене площадки при выборе нового статуса
+  const venueConflict=computed(()=>{
+    if(!newStatusId.value||!selectedOrder.value)return null;
+    const cur=venueOf(selectedOrder.value);
+    if(!cur)return null;
+    if(KOVROV_IDS.has(newStatusId.value)&&cur.cls==='venue-novosibirsk')return'Ковров';
+    if(NOVOSIBIRSK_IDS.has(newStatusId.value)&&cur.cls==='venue-kovrov')return'Новосибирск';
+    return null;
+  });
+
+  // Длительность нахождения в статусе для вкладки «История»
+  function fmtDur(ms){
+    const m=Math.round(ms/60000);
+    if(m<1)return'<1м';
+    if(m<60)return m+'м';
+    const h=Math.floor(m/60);
+    if(h<48)return h+'ч '+(m%60)+'м';
+    return Math.floor(h/24)+'д';
+  }
+  const histWithDuration=computed(()=>{
+    const h=selectedOrder.value?.statusHistory;
+    if(!h?.length)return[];
+    const sorted=[...h].sort((a,b)=>new Date(a.changeDate)-new Date(b.changeDate));
+    return sorted.map((entry,i)=>{
+      const next=sorted[i+1];
+      const ms=next?new Date(next.changeDate)-new Date(entry.changeDate):Date.now()-new Date(entry.changeDate);
+      return{...entry,duration:fmtDur(ms)};
+    }).reverse();
+  });
+
+  function shortId(id){if(!id)return'—';const p=id.replace(/-/g,'');return p.slice(0,8).toUpperCase()+'…'+p.slice(-4).toUpperCase();}
+
+  // Определяет производственную площадку из статуса и истории заказа.
+  // Возвращает {label, cls} или null, если площадка не определена.
+  const KOVROV_IDS      = new Set(['8001000000001500','800100000000011F']);
+  const NOVOSIBIRSK_IDS = new Set(['8001000000001501','8001000000000120']);
+  function venueOf(order){
+    if(!order)return null;
+    // Ищем последнюю по дате запись, где newStatusId — это статус площадки
+    const history=order.statusHistory||[];
+    const sorted=[...history].sort((a,b)=>new Date(b.changeDate)-new Date(a.changeDate));
+    for(const h of sorted){
+      if(KOVROV_IDS.has(h.newStatusId))return{label:'Ковров',cls:'venue-kovrov'};
+      if(NOVOSIBIRSK_IDS.has(h.newStatusId))return{label:'Новосибирск',cls:'venue-novosibirsk'};
+    }
+    // Fallback: текущий статус заказа
+    if(KOVROV_IDS.has(order.statusId))return{label:'Ковров',cls:'venue-kovrov'};
+    if(NOVOSIBIRSK_IDS.has(order.statusId))return{label:'Новосибирск',cls:'venue-novosibirsk'};
+    return null;
+  }
+  function sName(id){return statusMap.value[id]?.name||(id?.slice(0,8)||'—');}
+  function sColor(id){return statusMap.value[id]?.color||'#a0aec0';}
+  function fmtDate(d){return d?new Date(d).toLocaleDateString('ru-RU'):'—';}
+  function fmtDateTime(d){return d?new Date(d).toLocaleString('ru-RU',{day:'2-digit',month:'2-digit',year:'2-digit',hour:'2-digit',minute:'2-digit'}):'—';}
+  function fmtMoney(n){return(!n&&n!==0)?'—':Number(n).toLocaleString('ru-RU',{minimumFractionDigits:2,maximumFractionDigits:2});}
+  function fmtNum(n){return(!n&&n!==0)?'—':Number(n).toLocaleString('ru-RU',{minimumFractionDigits:0,maximumFractionDigits:4});}
+  function showToast(msg,type='ok'){toast.value={msg,type};setTimeout(()=>toast.value=null,3500);}
+
+  async function loadOrders(){
+    try{const r=await fetch('/api/orders');if(r.ok)orders.value=await r.json();else showToast('Ошибка загрузки заказов','err');}
+    catch(e){showToast('Нет соединения с сервером','err');}
+  }
+  async function loadStatuses(){
+    try{const r=await fetch('/api/orders/statuses');if(r.ok)allStatuses.value=await r.json();}
+    catch(e){showToast('Ошибка загрузки справочника статусов','err');}
+  }
+  async function loadLineStatuses(){
+    try{const r=await fetch('/api/orders/statuses/lines');if(r.ok)lineStatuses.value=await r.json();}
+    catch(e){showToast('Ошибка загрузки статусов строк','err');}
+  }
+  async function loadStats(){
+    try{const r=await fetch('/api/orders/stats');if(r.ok)stats.value=await r.json();}
+    catch(e){showToast('Ошибка загрузки статистики','warn');}
+  }
+  async function selectOrder(id){
+    selectedId.value=id; activeTab.value='specs';
+    const ex=orders.value.find(o=>o.id===id);
+    if(ex&&!ex.specification){
+      try{
+        const r=await fetch(`/api/orders/${id}`);
+        if(r.ok){const full=await r.json();const i=orders.value.findIndex(o=>o.id===id);if(i>=0)orders.value[i]={...orders.value[i],...full};}
+      }catch(e){showToast('Ошибка загрузки деталей','err');}
+    }
+  }
+  function openStatusModal(){modalSubmitted.value=false;newStatusId.value='';statusComment.value='';showModal.value=true;}
+  async function doUpdateStatus(statusId,comment){
+    if(!selectedId.value)return;
+    saving.value=true;
+    try{
+      const r=await fetch(`/api/orders/${selectedId.value}/status`,{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({statusId,comment:comment||''})});
+      if(r.ok){
+        const updated=await r.json();
+        showToast('Статус успешно обновлён'); showModal.value=false; newStatusId.value=''; statusComment.value=''; modalSubmitted.value=false;
+        try{const fr=await fetch(`/api/orders/${selectedId.value}`);if(fr.ok){const full=await fr.json();const i=orders.value.findIndex(o=>o.id===selectedId.value);if(i>=0)orders.value[i]={...orders.value[i],...full,...{statusId:updated.statusId,statusName:updated.statusName,statusColor:updated.statusColor}};}}catch(e){}
+        await loadStats();
+      } else {const txt=await r.text().catch(()=>'');showToast(txt||'Ошибка обновления статуса','err');}
+    }catch(e){showToast('Ошибка сети при обновлении','err');}
+    finally{saving.value=false;}
+  }
+  async function updateStatus(){
+    modalSubmitted.value=true;
+    if(!newStatusId.value){showToast('Выберите новый статус','warn');return;}
+    await doUpdateStatus(newStatusId.value,statusComment.value);
+  }
+  async function quickStatus(id){await doUpdateStatus(id,'');}
+  async function updateSpecStatus(spec,newSid){
+    const orderId=selectedId.value; if(!orderId)return;
+    const prev=spec.statusId; spec.statusId=newSid||null;
+    try{
+      const r=await fetch(`/api/orders/${orderId}/specs/${spec.id}/status`,{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({statusId:newSid||''})});
+      if(r.ok){const data=await r.json();if(data.orderStatusId){const order=orders.value.find(o=>o.id===orderId);if(order)order.statusId=data.orderStatusId;}}
+      else{spec.statusId=prev;showToast('Не удалось сохранить статус строки','err');}
+    }catch(e){spec.statusId=prev;showToast('Ошибка сети','err');}
+  }
+  function onDraftOrderStatusChange(newId){
+    draft.value.statusId=newId;
+    const specs=draft.value.specification;
+    if(!specs||!specs.length)return;
+    const{a,d}=_lineRangeFor(newId);
+    let defAssigned=false;
+    specs.forEach((sp,i)=>{
+      const isLast=(i===specs.length-1);
+      if(!defAssigned&&(isLast||Math.random()<0.5)){sp.statusId=_rand(d);defAssigned=true;}
+      else{sp.statusId=_rand(a);}
+    });
+    if(!defAssigned)specs[0].statusId=_rand(d);
+  }
+  function onDraftSpecStatusChange(spec,newId){
+    spec.statusId=newId;
+    const derived=deriveOrderStatus(draft.value.specification||[]);
+    if(derived)draft.value.statusId=derived;
+  }
+  function openCreate(){
+    draft.value={number:'',shopId:'',managerId:'',paymentTypeId:'',comment:'',statusId:'',specification:[]};
+    draftClientId.value=''; draftStatus.value=''; createSubmitted.value=false; showCreate.value=true;
+  }
+  function confirmCloseCreate(){
+    const hasDraft=draft.value.shopId||draft.value.managerId||draft.value.number||(draft.value.specification?.length>0);
+    if(hasDraft){
+      confirmData.value={title:'Закрыть форму?',message:'Все введённые данные будут потеряны.',ok:'Закрыть',onConfirm:()=>{showCreate.value=false;}};
+      showConfirm.value=true;
+    } else {showCreate.value=false;}
+  }
+  async function generateDraft(){
+    draftLoading.value=true;
+    try{
+      const url='/api/orders/draft'+(draftStatus.value?'?statusId='+encodeURIComponent(draftStatus.value):'');
+      const r=await fetch(url);
+      if(r.ok){
+        const o=await r.json();
+        draft.value={number:o.number||'',shopId:o.shopId||'',managerId:o.managerId||'',paymentTypeId:o.paymentTypeId||'',comment:o.comment||'',statusId:o.statusId||'',specification:(o.specification||[]).map(s=>({id:s.id,nomenclatureId:s.nomenclatureId||'',quantity:s.quantity||1,price:s.price||0,statusId:s.statusId||''}))};
+        draftClientId.value=o.organization?.clientId||'';
+      } else {showToast('Не удалось сгенерировать черновик','err');}
+    }catch(e){showToast('Ошибка сети','err');}
+    finally{draftLoading.value=false;}
+  }
+  function addSpec(){if(!draft.value.specification)draft.value.specification=[];draft.value.specification.push({nomenclatureId:'',quantity:1,price:0,statusId:''});}
+  function removeSpec(i){draft.value.specification.splice(i,1);}
+  async function submitCreate(){
+    createSubmitted.value=true;
+    if(!draft.value.shopId?.trim()){showToast('Укажите ID магазина','warn');return;}
+    if(!draft.value.managerId?.trim()){showToast('Укажите ID менеджера','warn');return;}
+    const invalidSpecs=(draft.value.specification||[]).filter(s=>s.quantity<1||s.price<0);
+    if(invalidSpecs.length){showToast('Проверьте позиции: количество ≥ 1, цена ≥ 0','warn');return;}
+    createSaving.value=true;
+    try{
+      const specs=(draft.value.specification||[]).map((s,i)=>({id:s.id||crypto.randomUUID(),itemNumber:i+1,nomenclatureId:s.nomenclatureId||crypto.randomUUID(),isService:false,priceListId:'8001'+Math.floor(Math.random()*90000+10000),quantity:Number(s.quantity)||1,price:Number(s.price)||0,totalAmount:Math.round((Number(s.price)||0)*(Number(s.quantity)||1)*100)/100,statusId:s.statusId||null}));
+      const body={number:draft.value.number||null,shopId:draft.value.shopId||'',managerId:draft.value.managerId||'',paymentTypeId:draft.value.paymentTypeId||'CARD',comment:draft.value.comment||'',statusId:draft.value.statusId||null,stateName:'Updated',organization:{clientId:draftClientId.value||crypto.randomUUID()},specification:specs};
+      const r=await fetch('/api/orders/create',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify(body)});
+      if(r.ok){showToast('Заказ создан и отправлен в Kafka');showCreate.value=false;createSubmitted.value=false;await Promise.all([loadOrders(),loadStats()]);}
+      else{const txt=await r.text().catch(()=>'');showToast(txt||'Не удалось создать заказ','err');}
+    }catch(e){showToast('Ошибка сети при создании','err');}
+    finally{createSaving.value=false;}
+  }
+  async function generate(){
+    genError.value='';
+    if(!genCount.value||genCount.value<1||genCount.value>100){genError.value='Количество: от 1 до 100';return;}
+    generating.value=true; genResult.value='';
+    try{
+      const r=await fetch('/api/orders/generate',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({count:genCount.value,statusId:genStatus.value||null})});
+      if(r.ok){const d=await r.json();genResult.value=`создано ${d.generated}`;showToast(`Сгенерировано ${d.generated} заказов`);await Promise.all([loadOrders(),loadStats()]);}
+      else{genError.value='Ошибка сервера';showToast('Ошибка генерации','err');}
+    }catch(e){genError.value='Нет связи';showToast('Ошибка сети','err');}
+    finally{generating.value=false;}
+  }
+
+  let conn=null;
+  async function connectSignalR(){
+    conn=new signalR.HubConnectionBuilder().withUrl('/hubs/orders').withAutomaticReconnect().build();
+    conn.on('OrderUpdated',item=>{
+      const i=orders.value.findIndex(o=>o.id===item.id);
+      if(i>=0)orders.value[i]={...orders.value[i],...item};
+      else orders.value.push(item);
+      loadStats();
+    });
+    conn.onreconnecting(()=>connected.value=false);
+    conn.onreconnected(()=>{connected.value=true;showToast('Соединение восстановлено');});
+    conn.onclose(()=>connected.value=false);
+    try{await conn.start();connected.value=true;}
+    catch(e){showToast('SignalR недоступен. Данные не будут обновляться в реальном времени.','warn');}
+  }
+
+  onMounted(async()=>{
+    await Promise.all([loadStatuses(),loadLineStatuses(),loadOrders(),loadStats()]);
+    await connectSignalR();
+  });
+  onUnmounted(()=>conn?.stop());
+
+  return{
+    orders,allStatuses,lineStatuses,stats,search,filterStatus,filterCategory,
+    selectedId,activeTab,connected,
+    showModal,modalSubmitted,newStatusId,statusComment,saving,
+    showGen,genCount,genStatus,generating,genResult,genError,
+    toast,tabs,groupedStatuses,categoryStatuses,categoryChips,
+    categories,filteredOrders,selectedOrder,totalSpec,
+    isCompleted,nextStatuses,isCreateValid,
+    shortId,sName,sColor,fmtDate,fmtDateTime,fmtMoney,fmtNum,venueOf,
+    selectOrder,openStatusModal,updateStatus,quickStatus,generate,
+    showCreate,draft,draftClientId,draftStatus,draftLoading,createSaving,createSubmitted,
+    openCreate,confirmCloseCreate,generateDraft,addSpec,removeSpec,submitCreate,
+    onDraftOrderStatusChange,onDraftSpecStatusChange,
+    lineStatusMap,lsColor,updateSpecStatus,
+    showConfirm,confirmData,
+    venueConflict,histWithDuration,
+  };
+}}).mount('#app');
+</script>
+</body>
+</html>

@@ -16,7 +16,8 @@
           <zeebe:property name="schemaStrategy.schemaType" value="avro" />
           <zeebe:property name="schemaStrategy.schemaRegistryUrl" value="http://localhost:8082" />
           <zeebe:property name="consumeUnmatchedEvents" value="true" />
-          <zeebe:property name="correlationRequired" value="notRequired" />
+          <zeebe:property name="correlationRequired" value="required" />
+          <zeebe:property name="correlationKeyExpression" value="=string(value.messageObject.id)" />
           <zeebe:property name="deduplicationModeManualFlag" value="false" />
           <zeebe:property name="deduplicationMode" value="AUTO" />
           <zeebe:property name="resultVariable" value="" />

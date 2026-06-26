@@ -102,5 +102,24 @@ services:
         condition: service_started
     restart: unless-stopped
 
+  order-manager:
+    build:
+      context: ../order-manager
+      dockerfile: Dockerfile
+    container_name: order-manager
+    ports:
+      - "5080:5000"
+    environment:
+      Kafka__BootstrapServers: kafka:29092
+      Kafka__Topic: all_orders
+      Kafka__ConsumerGroup: order-manager-ui
+      SchemaRegistry__Url: http://schema-registry:8081
+    depends_on:
+      kafka:
+        condition: service_healthy
+      schema-registry:
+        condition: service_started
+    restart: unless-stopped
+
 volumes:
   kafka-data:

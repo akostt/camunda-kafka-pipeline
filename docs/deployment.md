@@ -1,372 +1,280 @@
-# Camunda 8 — Production Deployment Guide
-## Kubernetes (k3s) + Helm + PostgreSQL (без Elasticsearch)
+# Camunda 8 — Руководство по развёртыванию
+## k3s + Helm + Elasticsearch + Identity/Keycloak + Kafka SSL
+
+---
+
+## Системные требования
+
+### Минимум для тестов (одна нода)
+
+| Компонент | RAM | Примечание |
+|---|---|---|
+| Elasticsearch | 2 GB | JVM heap 1 GB |
+| Zeebe + Operate + Tasklist | 1.5 GB | Один JVM-процесс |
+| Identity | 512 MB | Управление пользователями |
+| Keycloak | 1 GB | OIDC-провайдер |
+| PostgreSQL (для Keycloak) | 256 MB | |
+| Connectors | 512 MB | |
+| k3s + ОС | 512 MB | |
+| **Итого** | **~6.3 GB** | **Рекомендуется 8 GB** |
+
+**Диск:** минимум 40 GB SSD.  
+**CPU:** 2 vCPU минимум, 4 vCPU комфортно.  
+**ОС:** Ubuntu 22.04 LTS.
+
+### Производственная нагрузка
+
+| Активных экземпляров | RAM | CPU | Диск ES |
+|---|---|---|---|
+| до 1 000 | 8 GB / 4 vCPU | умеренная | 15 GB |
+| 1 000 – 10 000 | 16 GB / 8 vCPU | средняя | 50 GB |
+| 10 000+ | 32 GB+ / 16+ vCPU | высокая | 100 GB+ |
 
 ---
 
 ## Архитектура
 
 ```
-┌────────────────────────────────────────────────────┐
-│  Ubuntu 22.04 (k3s single-node Kubernetes)        │
-│                                                    │
-│  ┌──────────────────────┐  ┌──────────────────┐  │
-│  │  Orchestration Pod   │  │  Connectors Pod  │  │
-│  │  Zeebe + Operate +   │  │  (Kafka и др.)   │  │
-│  │  Tasklist + Admin    │  │                  │  │
-│  └──────────┬───────────┘  └──────────────────┘  │
-│             │ PostgreSQL JDBC                      │
-│  ┌──────────▼───────────┐                         │
-│  │  PostgreSQL (CNPG)   │                         │
-│  └──────────────────────┘                         │
-└────────────────────────────────────────────────────┘
+Browser
+   │
+   ▼ port 80
+┌──────────────────────────────────────────────────────────────────┐
+│  k3s: Traefik Ingress  ← <IP>.nip.io (бесплатный wildcard DNS)  │
+│     /          → camunda-zeebe-gateway:8080 (Operate/Tasklist)  │
+│     /auth/     → camunda-keycloak:80 (Keycloak login)           │
+│     /identity  → camunda-identity:80 (Identity UI)              │
+│                                                                  │
+│  ┌──────────────────────┐  ┌─────────────────────────────────┐  │
+│  │  Orchestration Pod   │  │  Identity Pod + Keycloak        │  │
+│  │  Zeebe + Operate +   │  │  + PostgreSQL                   │  │
+│  │  Tasklist            │  │                                 │  │
+│  └──────────┬───────────┘  └─────────────────────────────────┘  │
+│             │ Elasticsearch                                       │
+│  ┌──────────▼───────────┐                                        │
+│  │  Elasticsearch       │                                        │
+│  └──────────────────────┘                                        │
+└──────────────────────────────────────────────────────────────────┘
+│
+│  Docker: Kafka (SSL :9093) + Schema Registry (:8081)
 ```
 
-**Доступ после установки:**
+**Доступ после установки** (всё через порт 80 Traefik):
 
 | Сервис | URL |
-|--------|-----|
-| Operate (мониторинг) | http://<SERVER_IP>:8080/operate |
-| Tasklist (задачи) | http://<SERVER_IP>:8080/tasklist |
-| Admin (пользователи) | http://<SERVER_IP>:8080/identity |
-| Zeebe gRPC (деплой) | <SERVER_IP>:26500 |
-| Zeebe REST API | http://<SERVER_IP>:8080 |
-
-**Учётные данные по умолчанию — сменить после первого входа:**
-- Основной пользователь: `demo` / `demo`
+|---|---|
+| Operate | `http://<IP>.nip.io/operate` |
+| Tasklist | `http://<IP>.nip.io/tasklist` |
+| Identity | `http://<IP>.nip.io/identity` |
+| Keycloak admin | `http://<IP>.nip.io/auth` |
+| Schema Registry | `http://<IP>:8081` |
+| Kafka SSL | `<IP>:9093` |
+| Kafka plaintext | `<IP>:9092` |
 
 ---
 
-## Шаг 1 — Подготовка сервера
+## Быстрая установка
 
 ```bash
-ssh <SERVER_IP> -l user1
-sudo apt-get update && sudo apt-get upgrade -y
+chmod +x camunda-k3s-setup.sh
+./camunda-k3s-setup.sh
+# Или без интерактивного ввода:
+KAFKA_SSL_PASS=KafkaPass123 ./camunda-k3s-setup.sh
 ```
+
+Скрипт выполняется ~20–30 минут. Логин: `demo` / `demo`.
 
 ---
 
-## Шаг 2 — Установка k3s (Kubernetes)
+## Пошаговая установка
+
+### Шаг 1 — Подготовка сервера
+
+```bash
+sudo apt-get update && sudo apt-get upgrade -y
+sudo apt-get install -y default-jre-headless python3 python3-yaml
+```
+
+### Шаг 2 — k3s (включает Traefik Ingress)
 
 ```bash
 curl -sfL https://get.k3s.io | sh -
-```
-
-Настройка доступа для текущего пользователя:
-```bash
 mkdir -p ~/.kube
 sudo cp /etc/rancher/k3s/k3s.yaml ~/.kube/config
 sudo chown $(id -u):$(id -g) ~/.kube/config
 chmod 600 ~/.kube/config
 echo 'export KUBECONFIG=~/.kube/config' >> ~/.bashrc
 export KUBECONFIG=~/.kube/config
-```
-
-Проверка (нода должна быть `Ready`):
-```bash
 kubectl get nodes
 ```
 
----
+k3s автоматически устанавливает **Traefik Ingress** на порту 80.
 
-## Шаг 3 — Установка Helm
+### Шаг 3 — Helm и Docker
 
 ```bash
 curl -fsSL https://raw.githubusercontent.com/helm/helm/main/scripts/get-helm-3 | bash
+curl -fsSL https://get.docker.com | sh -
+sudo usermod -aG docker $USER && sudo chmod 666 /var/run/docker.sock
 ```
 
----
-
-## Шаг 4 — Установка оператора CloudNativePG (PostgreSQL)
-
-Актуальный URL манифеста — на странице [релизов CloudNativePG](https://github.com/cloudnative-pg/cloudnative-pg/releases/latest).
-Установка последнего стабильного релиза (release-1.28 на момент написания):
-
-```bash
-kubectl apply --server-side \
-  -f https://raw.githubusercontent.com/cloudnative-pg/cloudnative-pg/release-1.28/releases/cnpg-1.28.0.yaml
-
-kubectl wait --for=condition=available deployment/cnpg-controller-manager \
-  -n cnpg-system --timeout=120s
-```
-
----
-
-## Шаг 5 — Namespace и секреты паролей
-
-```bash
-kubectl create namespace camunda
-mkdir -p ~/camunda-deploy
-```
-
-Придумай два пароля — для суперпользователя PostgreSQL и для пользователя приложения.  
-Требование: только буквы и цифры, без спецсимволов (`@`, `$`, `"` и т.п.) — они ломают bash-команды.
-
-Например: `MyPostgresAdmin2024` и `CamundaAppPass2024`.
-
-Сохрани пароли в файл:
-```bash
-cat > ~/camunda-deploy/passwords.txt << 'EOF'
-PG_SUPERUSER_PASS=MyPostgresAdmin2024
-PG_APP_PASS=CamundaAppPass2024
-EOF
-chmod 600 ~/camunda-deploy/passwords.txt
-```
-
-Создай Kubernetes secrets — подставь **свои** пароли:
-```bash
-kubectl create secret generic pg-superuser-secret \
-  --from-literal=username=postgres \
-  --from-literal=password="MyPostgresAdmin2024" \
-  -n camunda
-
-kubectl create secret generic pg-camunda-secret \
-  --from-literal=username=camundauser \
-  --from-literal=password="CamundaAppPass2024" \
-  -n camunda
-```
-
-> Файл `passwords.txt` не коммить в git.
-
----
-
-## Шаг 6 — Развёртывание PostgreSQL
-
-Сохрани как `~/camunda-deploy/postgresql-cluster.yaml`:
-
-```yaml
-apiVersion: postgresql.cnpg.io/v1
-kind: Cluster
-metadata:
-  name: pg-camunda
-  namespace: camunda
-spec:
-  instances: 1
-  imageName: ghcr.io/cloudnative-pg/postgresql:17.9
-  storage:
-    size: 8Gi
-  superuserSecret:
-    name: pg-superuser-secret
-  bootstrap:
-    initdb:
-      database: camundadb
-      owner: camundauser
-      secret:
-        name: pg-camunda-secret
-  resources:
-    requests:
-      memory: 256Mi
-      cpu: 100m
-    limits:
-      memory: 512Mi
-      cpu: 500m
-```
-
-Применяем и ждём (~2 мин):
-```bash
-kubectl apply -f ~/camunda-deploy/postgresql-cluster.yaml
-kubectl wait --for=condition=Ready cluster/pg-camunda -n camunda --timeout=180s
-```
-
-Готов, когда `kubectl get cluster pg-camunda -n camunda` показывает `Cluster in healthy state`.
-
----
-
-## Шаг 7 — Добавление Helm-репозитория Camunda
-
-```bash
-helm repo add camunda https://helm.camunda.io
-helm repo update
-```
-
----
-
-## Шаг 8 — Helm values-файл
-
-Сохрани как `~/camunda-deploy/values-camunda.yaml`:
+### Шаг 4 — Helm values
 
 ```yaml
 global:
+  # Traefik Ingress на порту 80. nip.io — бесплатный wildcard DNS,
+  # <IP>.nip.io автоматически резолвится в <IP> без настройки DNS.
+  ingress:
+    enabled: true
+    className: traefik
+    host: "<IP>.nip.io"
+    tls:
+      enabled: false
+
   identity:
     auth:
-      enabled: false   # Basic auth — Keycloak не нужен
+      enabled: true
+      # Публичный URL Keycloak — браузер редиректится сюда при логине.
+      publicIssuerUrl: "http://<IP>.nip.io/auth/realms/camunda-platform"
+      # Внутренний URL — для сервисов внутри кластера.
+      issuerBackendUrl: "http://camunda-keycloak/auth/realms/camunda-platform"
+      orchestration:
+        redirectUrl: "http://<IP>.nip.io/sso-callback"
+
+  # ОБЯЗАТЕЛЬНО: без этого Zeebe стартует в Basic auth, Connectors не получают JWT.
+  security:
+    authentication:
+      method: oidc
 
 orchestration:
-  enabled: true
-  replicaCount: 1
-  clusterSize: "1"
-  partitionCount: "1"
-  replicationFactor: "1"
-  affinity:
-    podAntiAffinity: {}   # Нужно для single-node Kubernetes
-
-  exporters:
-    camunda:
-      enabled: false
-    rdbms:
-      enabled: true
-
-  data:
-    secondaryStorage:
-      type: rdbms
-      rdbms:
-        url: "jdbc:postgresql://pg-camunda-rw.camunda.svc.cluster.local:5432/camundadb"
-        username: camundauser
-        secret:
-          existingSecret: pg-camunda-secret
-          existingSecretKey: password
-
-  resources:
-    requests:
-      memory: "512Mi"
-      cpu: "250m"
-    limits:
-      memory: "1.5Gi"
-      cpu: "1500m"
-
   service:
-    type: LoadBalancer   # k3s автоматически назначит внешний IP сервера
-    headless:
-      type: ClusterIP
+    type: ClusterIP   # Traefik маршрутизирует снаружи, ClusterIP достаточно
+
+  # gRPC Ingress для внешних job workers
+  ingress:
+    grpc:
+      enabled: true
+      className: traefik
+      host: "grpc.<IP>.nip.io"
+
+  security:
+    authentication:
+      oidc:
+        secret:
+          inlineSecret: "<OIDC_SECRET>"
 
 connectors:
-  enabled: true
-  inbound:
-    mode: disabled
-  resources:
-    requests:
-      memory: "256Mi"
-      cpu: "100m"
-    limits:
-      memory: "512Mi"
-      cpu: "500m"
-  env: []   # Connector secrets добавляются сюда, см. раздел ниже
+  security:
+    authentication:
+      oidc:
+        secret:
+          inlineSecret: "<OIDC_SECRET>"
+  env:
+    # Helm chart устанавливает AUTH_TYPE=KEYCLOAK, но не инжектирует CLIENT_ID/SECRET.
+    - name: CAMUNDA_CLIENT_ID
+      value: "connectors"
+    - name: CAMUNDA_CLIENT_SECRET
+      value: "<OIDC_SECRET>"
+    - name: CAMUNDA_AUTH_SERVER_URL
+      value: "http://camunda-keycloak/auth/realms/camunda-platform"
+    - name: ZEEBE_CLIENT_SECURITY_PLAINTEXT
+      value: "true"
 
-elasticsearch:
-  enabled: false
 identity:
-  enabled: false
-optimize:
-  enabled: false
-webModeler:
-  enabled: false
-console:
-  enabled: false
+  firstUser:
+    username: demo
+    secret:
+      inlineSecret: "demo"
+
+identityKeycloak:
+  enabled: true
+  readinessProbe:
+    httpGet:
+      path: /auth/realms/master
+      port: 8080    # Keycloak слушает на 8080; дефолтный probe шёл на неверный путь
 ```
 
----
-
-## Шаг 9 — Установка Camunda
+### Шаг 5 — Установка
 
 ```bash
+helm repo add camunda https://helm.camunda.io && helm repo update
 helm install camunda camunda/camunda-platform \
   -f ~/camunda-deploy/values-camunda.yaml \
-  -n camunda \
-  --timeout 15m
+  -n camunda --timeout 25m
+kubectl wait --for=condition=Ready pod -l app.kubernetes.io/instance=camunda \
+  -n camunda --timeout=1200s
 ```
 
-Ждём запуска подов (~5–10 мин — JVM стартует медленно):
+### Шаг 6 — Post-install: патч redirect URLs
+
+Helm chart прописывает `localhost:8080` в двух местах: Zeebe ConfigMap и Keycloak client. Без патча после логина браузер будет редиректиться на `localhost`.
+
 ```bash
-kubectl get pods -n camunda -w
+DOMAIN="<IP>.nip.io"
+KC_IP=$(kubectl get svc camunda-keycloak -n camunda -o jsonpath="{.spec.clusterIP}")
+
+# 1. Патч Zeebe ConfigMap
+kubectl get configmap camunda-zeebe-configuration -n camunda -o yaml \
+  | sed "s|redirect-uri: \"http://localhost:8080/sso-callback\"|redirect-uri: \"http://${DOMAIN}/sso-callback\"|g" \
+  | kubectl apply -f -
+
+# 2. Патч Keycloak client redirect URIs
+TOKEN=$(curl -s -X POST "http://${KC_IP}/auth/realms/master/protocol/openid-connect/token" \
+  -d "client_id=admin-cli&username=admin&password=<KC_ADMIN_PASS>&grant_type=password" \
+  | python3 -c "import sys,json; print(json.load(sys.stdin)['access_token'])")
+
+CLIENT_ID=$(curl -s -H "Authorization: Bearer $TOKEN" \
+  "http://${KC_IP}/auth/admin/realms/camunda-platform/clients?clientId=orchestration" \
+  | python3 -c "import sys,json; print(json.load(sys.stdin)[0]['id'])")
+
+curl -s -X PUT \
+  -H "Authorization: Bearer $TOKEN" -H "Content-Type: application/json" \
+  "http://${KC_IP}/auth/admin/realms/camunda-platform/clients/${CLIENT_ID}" \
+  -d "{\"redirectUris\":[\"http://${DOMAIN}/sso-callback\",\"http://${DOMAIN}/*\"],\"webOrigins\":[\"http://${DOMAIN}\"]}"
+
+# 3. Патч Ingress (chart не добавляет путь / для Operate/Tasklist)
+kubectl patch ingress camunda-camunda-platform-http -n camunda --type=json -p '[
+  {"op":"add","path":"/spec/rules/0/http/paths/-","value":{"path":"/","pathType":"Prefix","backend":{"service":{"name":"camunda-zeebe-gateway","port":{"number":8080}}}}},
+  {"op":"remove","path":"/metadata/annotations/ingress.kubernetes.io~1rewrite-target"}
+]'
+
+# 4. Перезапуск Zeebe
+kubectl rollout restart statefulset/camunda-zeebe -n camunda
+kubectl rollout status statefulset/camunda-zeebe -n camunda --timeout=300s
 ```
 
-Всё готово, когда все поды показывают `1/1 Running`:
-```
-camunda-connectors-xxx   1/1   Running
-camunda-zeebe-0          1/1   Running
-pg-camunda-1             1/1   Running
-```
-
-Открой в браузере: http://<SERVER_IP>:8080/operate  
-Логин: `demo` / `demo`
+> **Всё это делается автоматически скриптом `camunda-k3s-setup.sh`.**
 
 ---
 
-## Настройка Connector Secrets
-
-Connector secrets — секретные значения (пароли, токены, пути к файлам), которые задаются один раз на сервере и используются в BPMN-диаграммах через `{{secrets.ИМЯ}}` — без хранения значений в самих диаграммах.
-
-### Как добавить secret
-
-**Шаг 1.** Создай Kubernetes secret с нужными значениями:
+## Connector Secrets для BPMN
 
 ```bash
-# Пример: пароли и файлы сертификатов для Kafka SSL
-kubectl create secret generic kafka-ssl-certs \
-  --from-literal=KAFKA_TRUSTSTORE_PASS="your-truststore-password" \
-  --from-literal=KAFKA_KEYSTORE_PASS="your-keystore-password" \
-  --from-literal=KAFKA_KEY_PASS="your-key-password" \
-  --from-file=truststore.jks=/путь/к/truststore.jks \
-  --from-file=keystore.jks=/путь/к/keystore.jks \
-  -n camunda
+kubectl create secret generic my-secret --from-literal=MY_KEY="value" -n camunda
+# Добавить в connectors.env в values:
+# - name: MY_KEY
+#   valueFrom:
+#     secretKeyRef:
+#       name: my-secret
+#       key: MY_KEY
+helm upgrade camunda camunda/camunda-platform -f ~/camunda-deploy/values-camunda.yaml -n camunda
 ```
 
-**Шаг 2.** Добавь в `values-camunda.yaml` в секцию `connectors`:
+В BPMN: `{{secrets.MY_KEY}}`
 
-```yaml
-connectors:
-  env:
-    # Пароли из Kubernetes secret
-    - name: KAFKA_TRUSTSTORE_PASS
-      valueFrom:
-        secretKeyRef:
-          name: kafka-ssl-certs
-          key: KAFKA_TRUSTSTORE_PASS
-    - name: KAFKA_KEYSTORE_PASS
-      valueFrom:
-        secretKeyRef:
-          name: kafka-ssl-certs
-          key: KAFKA_KEYSTORE_PASS
-    - name: KAFKA_KEY_PASS
-      valueFrom:
-        secretKeyRef:
-          name: kafka-ssl-certs
-          key: KAFKA_KEY_PASS
-    # Пути к файлам сертификатов внутри контейнера
-    - name: KAFKA_SSL_TRUSTSTORE_LOCATION
-      value: "/etc/kafka/ssl/truststore.jks"
-    - name: KAFKA_SSL_KEYSTORE_LOCATION
-      value: "/etc/kafka/ssl/keystore.jks"
+### Kafka SSL в BPMN (additionalProperties)
 
-  # Монтирует файлы из secret в контейнер
-  extraVolumes:
-    - name: kafka-ssl
-      secret:
-        secretName: kafka-ssl-certs
-  extraVolumeMounts:
-    - name: kafka-ssl
-      mountPath: /etc/kafka/ssl
-      readOnly: true
-```
-
-**Шаг 3.** Применяем:
-
-```bash
-helm upgrade camunda camunda/camunda-platform \
-  -f ~/camunda-deploy/values-camunda.yaml \
-  -n camunda
-```
-
-### Использование в BPMN-диаграмме
-
-В Camunda Modeler в полях Kafka-коннектора указывай:
-```
-{{secrets.KAFKA_TRUSTSTORE_PASS}}
-{{secrets.KAFKA_SSL_TRUSTSTORE_LOCATION}}
-```
-
-Переменная окружения `KAFKA_TRUSTSTORE_PASS` в контейнере автоматически становится доступна как `secrets.KAFKA_TRUSTSTORE_PASS` в диаграммах.
-
-### Простые значения без файлов
-
-Для паролей и токенов без файлов — можно не создавать K8s secret, а написать прямо в values:
-
-```yaml
-connectors:
-  env:
-    - name: KAFKA_BOOTSTRAP_SERVERS
-      value: "kafka.example.com:9093"
-    - name: MY_API_TOKEN
-      value: "actual-token-value"
+```feel
+={
+  "security.protocol": "SSL",
+  "ssl.keystore.location": "{{secrets.KAFKA_PFX_PATH}}",
+  "ssl.keystore.type": "PKCS12",
+  "ssl.keystore.password": "{{secrets.KAFKA_PFX_PASSWORD}}",
+  "ssl.key.password": "{{secrets.KAFKA_PFX_PASSWORD}}",
+  "ssl.truststore.location": "{{secrets.KAFKA_TRUSTSTORE_PATH}}",
+  "ssl.truststore.type": "PKCS12",
+  "ssl.truststore.password": "{{secrets.KAFKA_PFX_PASSWORD}}",
+  "ssl.endpoint.identification.algorithm": ""
+}
 ```
 
 ---
@@ -374,48 +282,56 @@ connectors:
 ## Полезные команды
 
 ```bash
-# Статус системы
-kubectl get pods,svc -n camunda
-
-# Логи Zeebe (Operate/Tasklist/Admin)
+kubectl get pods,svc,ingress -n camunda
 kubectl logs -n camunda camunda-zeebe-0 -f
-
-# Логи Connectors
 kubectl logs -n camunda deployment/camunda-connectors -f
-
-# Перезапуск после изменения secrets
 kubectl rollout restart deployment/camunda-connectors -n camunda
-
-# Обновление Camunda
-helm repo update
-helm upgrade camunda camunda/camunda-platform \
-  -f ~/camunda-deploy/values-camunda.yaml \
-  -n camunda
+helm upgrade camunda camunda/camunda-platform -f ~/camunda-deploy/values-camunda.yaml -n camunda
+docker exec kafka kafka-topics --bootstrap-server localhost:9092 --list
 ```
 
 ---
 
 ## Устранение неполадок
 
-**Pod завис в Pending:**
-```bash
-kubectl describe pod <имя-пода> -n camunda
-```
-Чаще всего: нехватка памяти или anti-affinity (добавь `affinity.podAntiAffinity: {}` в values).
+**Браузер редиректит на `localhost:18080` или `localhost:8080`:**  
+Не выполнен post-install патч. Запустить Шаг 6.
 
-**Ошибка подключения к PostgreSQL:**
+**404 при открытии `/operate`:**  
+Ingress не содержит путь `/`. Выполнить патч из Шага 6.
+
+**Zeebe в Basic auth вместо OIDC:**
 ```bash
-kubectl logs -n camunda camunda-zeebe-0 2>&1 | grep -i 'error\|postgres'
+kubectl get configmap camunda-zeebe-configuration -n camunda \
+  -o jsonpath="{.data.application\.yaml}" | grep "method:"
+```
+Если `method: basic` — добавить `global.security.authentication.method: oidc` в values.
+
+**Connectors — `UNAUTHENTICATED`:**  
+Добавить `CAMUNDA_CLIENT_ID`, `CAMUNDA_CLIENT_SECRET`, `CAMUNDA_AUTH_SERVER_URL` в `connectors.env`.
+
+**Zeebe падает при старте:**
+```
+Creation of initial users is not supported with OIDC authentication method
+```
+Убрать `CAMUNDA_SECURITY_INITIALIZATION_USERS_*` из `orchestration.env`. При OIDC пользователи создаются через `identity.firstUser`.
+
+**Keycloak застрял в `0/1`:**  
+Добавить в values:
+```yaml
+identityKeycloak:
+  readinessProbe:
+    httpGet:
+      path: /auth/realms/master
+      port: 8080
 ```
 
 **Полная переустановка:**
 ```bash
 helm uninstall camunda -n camunda
-kubectl delete pvc -n camunda --all
-# PostgreSQL cluster останется — пересоздавать не нужно
-helm install camunda camunda/camunda-platform \
-  -f ~/camunda-deploy/values-camunda.yaml \
-  -n camunda --timeout 15m
+kubectl delete pvc --all -n camunda
+docker compose -f ~/camunda-deploy/kafka/docker-compose.yml down -v
+./camunda-k3s-setup.sh
 ```
 
 ---
@@ -424,18 +340,14 @@ helm install camunda camunda/camunda-platform \
 
 ```
 ~/camunda-deploy/
-├── passwords.txt            # Пароли БД (не коммитить!)
-├── postgresql-cluster.yaml  # PostgreSQL cluster
-└── values-camunda.yaml      # Helm values для Camunda
+├── passwords.txt        # Все пароли — НЕ КОММИТИТЬ
+├── values-camunda.yaml  # Helm values
+├── kafka/
+│   └── docker-compose.yml
+└── kafka-ssl/
+    ├── ca.crt / ca.key
+    ├── kafka.broker.keystore.p12
+    ├── kafka.broker.truststore.p12
+    ├── client-full.pfx       # Для BPMN-коннекторов
+    └── client.truststore.p12
 ```
-
----
-
-## Следующие шаги (опционально)
-
-**OIDC-аутентификация (Keycloak)** — если нужна SSO вместо basic auth:  
-Установи `global.identity.auth.enabled: true` в values и добавь Keycloak. Требует домен + TLS.
-
-**HTTPS** — Traefik уже встроен в k3s. Добавь cert-manager + Let's Encrypt.
-
-**Масштабирование** — увеличь `clusterSize` и `partitionCount` при росте нагрузки.

@@ -33,3 +33,9 @@ kafka/kafka-ssl/
 
 # ── Office temp files ──────────────────────────────────────────────────────────
 ~$*
+
+# ── .NET / order-manager ───────────────────────────────────────────────────────
+order-manager/bin/
+order-manager/obj/
+order-manager/*.user
+order-manager/.vs/
