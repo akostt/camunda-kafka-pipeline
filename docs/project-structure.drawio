@@ -1,0 +1,62 @@
+<mxfile host="Electron">
+  <diagram id="1OXnqKhLBZRZnfNK8VrR" name="Страница-1">
+    <mxGraphModel dx="1359" dy="1018" grid="0" gridSize="10" guides="1" tooltips="1" connect="1" arrows="1" fold="1" page="1" pageScale="1" pageWidth="1660" pageHeight="820" math="0" shadow="0" adaptiveColors="auto">
+      <root>
+        <mxCell id="0" />
+        <mxCell id="1" parent="0" />
+        <mxCell id="title" parent="1" style="text;html=1;fontSize=20;fontStyle=1;align=center;verticalAlign=middle;" value="Как устроена система заказов Askona&#xa;Заказ проходит путь: order-manager → общая очередь → автоматические процессы → запись результата" vertex="1">
+          <mxGeometry height="56" width="1580" x="40" y="20" as="geometry" />
+        </mxCell>
+        <mxCell id="ordermanager" parent="1" style="rounded=1;arcSize=8;whiteSpace=wrap;html=1;fillColor=#dae8fc;strokeColor=#6c8ebf;align=left;verticalAlign=top;spacing=12;fontSize=13;shadow=1;" value="🖥️  order-manager&#xa;&#xa;Вспомогательное веб-приложение&#xa;для тестирования системы.&#xa;Генерирует тестовые заказы&#xa;и отправляет их в Kafka.&#xa;Вручную меняет статусы заказов&#xa;и их позиций — чтобы наблюдать&#xa;за реакцией процессов в Camunda." vertex="1">
+          <mxGeometry height="184" width="262" x="197" y="246" as="geometry" />
+        </mxCell>
+        <mxCell id="kafka" parent="1" style="rounded=1;arcSize=6;whiteSpace=wrap;html=1;fillColor=#ffe6cc;strokeColor=#d79b00;align=left;verticalAlign=top;spacing=12;fontSize=14;fontStyle=1;shadow=1;" value="📨  Apache Kafka&#xa;&#xa;Общая очередь сообщений.&#xa;Через неё все части системы&#xa;обмениваются заказами.&#xa;Соединение защищено." vertex="1">
+          <mxGeometry height="170" width="320" x="590" y="253" as="geometry" />
+        </mxCell>
+        <mxCell id="schemareg" parent="1" style="rounded=1;arcSize=8;whiteSpace=wrap;html=1;fillColor=#fff2cc;strokeColor=#d6b656;align=left;verticalAlign=top;spacing=12;fontSize=13;shadow=1;" value="🗂️  Реестр форматов (Schema Registry)&#xa;&#xa;Хранит единый формат сообщений,&#xa;чтобы все части системы&#xa;одинаково понимали данные о заказе." vertex="1">
+          <mxGeometry height="130" width="360" x="570" y="528" as="geometry" />
+        </mxCell>
+        <mxCell id="camunda" parent="1" style="rounded=1;arcSize=4;whiteSpace=wrap;html=1;fillColor=#d5e8d4;strokeColor=#82b366;align=center;verticalAlign=top;spacing=10;fontSize=15;fontStyle=1;shadow=1;" value="⚙️  Camunda 8 — управление процессами&#xa;Автоматически ведёт каждый заказ по этапам" vertex="1">
+          <mxGeometry height="320" width="480" x="1020" y="118" as="geometry" />
+        </mxCell>
+        <mxCell id="bpmn_lifecycle" parent="camunda" style="rounded=1;arcSize=8;whiteSpace=wrap;html=1;fillColor=#ffffff;strokeColor=#82b366;align=left;verticalAlign=top;spacing=10;fontSize=12;" value="📄  Жизненный цикл заказа&#xa;&#xa;Запускается сам, как только&#xa;появился новый заказ.&#xa;Ведёт заказ по этапам&#xa;в зависимости от его статуса." vertex="1">
+          <mxGeometry height="120" width="430" x="25" y="58" as="geometry" />
+        </mxCell>
+        <mxCell id="bpmn_kafka" parent="camunda" style="rounded=1;arcSize=8;whiteSpace=wrap;html=1;fillColor=#ffffff;strokeColor=#82b366;align=left;verticalAlign=top;spacing=10;fontSize=12;" value="📄  Подтверждение статуса&#xa;&#xa;Менеджер подтверждает статус&#xa;в Tasklist (рабочий список Camunda),&#xa;после чего система записывает&#xa;обновлённый статус обратно." vertex="1">
+          <mxGeometry height="120" width="430" x="25" y="188" as="geometry" />
+        </mxCell>
+        <mxCell id="worker" parent="1" style="rounded=1;arcSize=8;whiteSpace=wrap;html=1;fillColor=#e1d5e7;strokeColor=#9673a6;align=left;verticalAlign=top;spacing=12;fontSize=13;shadow=1;" value="🐍  worker — служба записи&#xa;&#xa;Получает задание от Camunda,&#xa;приводит данные к единому формату&#xa;и записывает обновлённый статус&#xa;заказа обратно в общую очередь." vertex="1">
+          <mxGeometry height="150" width="480" x="1020" y="528" as="geometry" />
+        </mxCell>
+        <mxCell id="legend" parent="1" style="text;html=1;fontSize=12;fontStyle=2;align=left;verticalAlign=middle;fillColor=#fafafa;strokeColor=#cccccc;rounded=1;spacing=8;" value="—  Сплошные стрелки: путь заказа          ┄  Пунктир: вспомогательные связи (формат данных, подтверждение в Tasklist)" vertex="1">
+          <mxGeometry height="32" width="900" x="70" y="728" as="geometry" />
+        </mxCell>
+        <mxCell id="e_om_kafka" edge="1" parent="1" source="ordermanager" style="edgeStyle=orthogonalEdgeStyle;rounded=1;html=1;endArrow=block;startArrow=block;strokeColor=#d79b00;strokeWidth=2.5;fontSize=12;fontColor=#7a4f00;labelBackgroundColor=none;verticalAlign=bottom;exitX=1;exitY=0.5;exitDx=0;exitDy=0;entryX=0;entryY=0.5;entryDx=0;entryDy=0;" target="kafka" value="отправляет заказы,&#xa;получает обновления">
+          <mxGeometry relative="1" as="geometry">
+            <mxPoint y="-12" as="offset" />
+          </mxGeometry>
+        </mxCell>
+        <mxCell id="e_sr_kafka" edge="1" parent="1" source="schemareg" style="edgeStyle=orthogonalEdgeStyle;rounded=1;html=1;endArrow=block;startArrow=block;dashed=1;strokeColor=#caa93a;strokeWidth=2;fontSize=11;fontColor=#7a6a14;labelBackgroundColor=#ffffff;exitX=0.5;exitY=0;exitDx=0;exitDy=0;entryX=0.5;entryY=1;entryDx=0;entryDy=0;" target="kafka" value="единый формат&#xa;сообщений">
+          <mxGeometry relative="1" as="geometry" />
+        </mxCell>
+        <mxCell id="e_kafka_camunda" edge="1" parent="1" source="kafka" style="edgeStyle=orthogonalEdgeStyle;rounded=1;html=1;endArrow=block;strokeColor=#82b366;strokeWidth=2.5;fontSize=12;fontColor=#3f5e31;labelBackgroundColor=none;verticalAlign=bottom;exitX=1;exitY=0.3;exitDx=0;exitDy=0;entryX=0;entryY=0.45;entryDx=0;entryDy=0;" target="camunda" value="новый заказ&#xa;запускает процесс">
+          <mxGeometry relative="1" x="0.2763" y="5" as="geometry">
+            <mxPoint x="-3" y="1" as="offset" />
+          </mxGeometry>
+        </mxCell>
+        <mxCell id="e_camunda_worker" edge="1" parent="1" source="camunda" style="edgeStyle=orthogonalEdgeStyle;rounded=1;html=1;endArrow=block;strokeColor=#9673a6;strokeWidth=2.5;fontSize=12;fontColor=#5e4477;labelBackgroundColor=#ffffff;exitX=0.5;exitY=1;exitDx=0;exitDy=0;entryX=0.5;entryY=0;entryDx=0;entryDy=0;" target="worker" value="задание: записать&#xa;новый статус">
+          <mxGeometry relative="1" as="geometry" />
+        </mxCell>
+        <mxCell id="e_worker_kafka" edge="1" parent="1" source="worker" style="edgeStyle=orthogonalEdgeStyle;rounded=1;html=1;endArrow=block;strokeColor=#d79b00;strokeWidth=2.5;fontSize=12;fontColor=#7a4f00;labelBackgroundColor=#ffffff;exitX=0;exitY=0.5;exitDx=0;exitDy=0;entryX=1;entryY=0.85;entryDx=0;entryDy=0;" target="kafka" value="записывает&#xa;обновлённый статус">
+          <mxGeometry relative="1" x="0.2869" as="geometry">
+            <mxPoint as="offset" />
+            <Array as="points">
+              <mxPoint x="945" y="603" />
+              <mxPoint x="945" y="398" />
+            </Array>
+          </mxGeometry>
+        </mxCell>
+      </root>
+    </mxGraphModel>
+  </diagram>
+</mxfile>
